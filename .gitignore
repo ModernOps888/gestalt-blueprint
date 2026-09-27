@@ -1,0 +1,22 @@
+# Python & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-wheel-metadata/
+
+# Gestalt Local Storage & Exports
+export/
+sessions/
+test_run/
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

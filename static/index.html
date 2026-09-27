@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GESTALT // Cognitive Topology & Socratic Blueprint Extractor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Header & Status Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="title-row">
+          <h1>GESTALT</h1>
+          <span class="badge prototype">COGNITIVE EXTRACTOR</span>
+        </div>
+        <p class="tagline">High-Bandwidth Thought-to-Topology Bridge (Zero-Prompt Extraction)</p>
+      </div>
+    </div>
+
+    <!-- Actions & Metrics -->
+    <div class="header-metrics">
+      <button id="btn-new-blueprint" class="btn btn-sm btn-action">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Blueprint
+      </button>
+
+      <button id="btn-history" class="btn btn-sm btn-secondary" title="View Saved Blueprints">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        History (<span id="history-count">0</span>)
+      </button>
+
+      <div class="metric-card">
+        <div class="metric-label">LATENT CONVERGENCE</div>
+        <div class="metric-progress-wrap">
+          <div class="progress-bar">
+            <div id="convergence-fill" class="progress-fill" style="width: 20%;"></div>
+          </div>
+          <span id="convergence-text" class="metric-val">20%</span>
+        </div>
+      </div>
+
+      <div class="engine-badge" id="engine-status-badge">
+        <span class="status-dot green"></span>
+        <span id="engine-name">Detecting Engine...</span>
+      </div>
+
+      <button id="btn-settings" class="btn-icon" title="Engine Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Expanded Archetype Preset Bar -->
+  <div class="preset-bar">
+    <span class="preset-label">ARCHETYPES:</span>
+    <button class="preset-chip active-preset" data-seed="Autonomous multi-agent swarm with hierarchical supervisor, episodic memory, and adversarial verifier">AI Swarm</button>
+    <button class="preset-chip" data-seed="Decentralized local-first collaborative canvas with peer-to-peer CRDT and zero cloud storage">P2P CRDT Mesh</button>
+    <button class="preset-chip" data-seed="Sub-millisecond high-frequency order router with lock-free ring buffer and pre-trade risk filter">HFT Order Book</button>
+    <button class="preset-chip" data-seed="Authoritative multiplayer game server with ECS world, spatial BVH grid, and lag compensation">Game ECS Server</button>
+    <button class="preset-chip" data-seed="Real-time RTSP video stream analytics with TensorRT GPU inference and spatial tracking">Computer Vision</button>
+    <button class="preset-chip" data-seed="IoT sensor edge mesh with MQTT broker, delta compressor, and adaptive cellular uplink">IoT Edge Mesh</button>
+    <button class="preset-chip" data-seed="Zero-trust eBPF kernel security probe with behavioral anomaly detector and quarantine gate">Zero-Trust Sec</button>
+    <button class="preset-chip" data-seed="Autonomous drone SLAM navigation with kinodynamic path planner and hardware safety watchdog">Robotics / SLAM</button>
+    <button class="preset-chip" data-seed="Language Server Protocol runtime with incremental Tree-Sitter AST and symbol index">DevTools / LSP</button>
+    <button class="preset-chip" data-seed="Ultra-low-latency WebRTC media SFU with distributed presence mesh and edge CDN segment cache">Real-Time Media</button>
+  </div>
+
+  <!-- Main 3-Column Layout -->
+  <main class="workbench">
+    <!-- LEFT COLUMN: Socratic Extractor & Probes -->
+    <section class="panel panel-left">
+      <div class="panel-header">
+        <h2>1. The Gestalt Spark</h2>
+        <span class="step-tag">SEED</span>
+      </div>
+
+      <div class="seed-input-container">
+        <label for="seed-input">Describe any system in 1-2 sentences (AI, Distributed, Game, Edge, etc.):</label>
+        <textarea id="seed-input" rows="3" placeholder="e.g. 'Build an autonomous multi-agent swarm that decomposes high-level goals into parallel coding tasks with formal test verification...'"></textarea>
+        <button id="btn-project" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Project Mental Topology
+        </button>
+      </div>
+
+      <div class="socratic-feed-header">
+        <h3>Socratic Bifurcation Probes</h3>
+        <p class="section-desc">Resolve these high-entropy forks with 1 click to crystallize the blueprint:</p>
+      </div>
+
+      <div id="probes-container" class="probes-list">
+        <div class="empty-state">
+          <p>Project a seed idea above to generate architectural bifurcation probes.</p>
+        </div>
+      </div>
+
+      <!-- Decision History / Crystallization Audit -->
+      <div class="decisions-section">
+        <div class="collapsible-header" id="decisions-toggle">
+          <h4>Crystallized Decisions Log (<span id="decisions-count">0</span>)</h4>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div id="decisions-body" class="decisions-body">
+          <p class="empty-text">No forks resolved yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER COLUMN: Interactive Topology Canvas -->
+    <section class="panel panel-center">
+      <div class="panel-header canvas-header">
+        <div>
+          <h2 id="blueprint-title">Emergent Topology</h2>
+          <div class="canvas-meta">
+            <span id="node-count" class="meta-tag">0 Nodes</span>
+            <span id="edge-count" class="meta-tag">0 Edges</span>
+            <span id="invariant-count" class="meta-tag">0 Invariants</span>
+          </div>
+        </div>
+        <div class="canvas-actions">
+          <button id="btn-fit" class="btn-canvas" title="Reset View">Reset View</button>
+          <button id="btn-toggle-flow" class="btn-canvas active" title="Toggle Flow Animation">Live Pulse</button>
+        </div>
+      </div>
+
+      <div class="canvas-viewport" id="canvas-viewport">
+        <canvas id="topology-canvas"></canvas>
+        <div class="canvas-overlay-hint">
+          <span>Tip: Drag nodes to rearrange • Click any node to inspect invariants & latency</span>
+        </div>
+      </div>
+
+      <!-- Node Detail Inspector (Bottom of Canvas) -->
+      <div id="node-inspector" class="node-inspector hidden">
+        <div class="inspector-header">
+          <div class="inspector-title-wrap">
+            <span id="inspect-tier" class="tier-pill">COMPUTE</span>
+            <h4 id="inspect-label">Node Details</h4>
+          </div>
+          <button id="btn-close-inspect" class="btn-close">×</button>
+        </div>
+        <div class="inspector-grid">
+          <div><strong>State Model:</strong> <span id="inspect-state">stateless</span></div>
+          <div><strong>Latency Budget:</strong> <span id="inspect-latency">~10ms</span></div>
+          <div class="inspector-desc-wrap"><strong>Role:</strong> <span id="inspect-desc">Description</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Synthesis, ADR & Executable Code -->
+    <section class="panel panel-right">
+      <div class="panel-header">
+        <h2>3. Synthesis & Export</h2>
+        <span class="step-tag">DELIVERABLES</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="deliverable-tabs">
+        <button class="tab-btn active" data-tab="adr">Architecture Spec (ADR)</button>
+        <button class="tab-btn" data-tab="code">Runnable Code</button>
+        <button class="tab-btn" data-tab="invariants">Invariants</button>
+      </div>
+
+      <div class="deliverable-content">
+        <!-- ADR Tab -->
+        <div class="tab-pane active" id="pane-adr">
+          <div class="markdown-preview" id="adr-markdown">
+            <p class="empty-state">Generate a blueprint to preview the Architecture Decision Record.</p>
+          </div>
+        </div>
+
+        <!-- Code Tab -->
+        <div class="tab-pane" id="pane-code">
+          <div class="code-toolbar">
+            <span class="file-name" id="code-file-name">main.py (Asyncio Actor Skeleton)</span>
+            <button id="btn-copy-code" class="btn-sm">Copy Code</button>
+          </div>
+          <pre class="code-block"><code id="code-content">// Python executable scaffolding will appear here...</code></pre>
+        </div>
+
+        <!-- Invariants Tab -->
+        <div class="tab-pane" id="pane-invariants">
+          <div class="invariants-list" id="invariants-container">
+            <p class="empty-state">System guardrails & runtime assertions will list here.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="export-footer">
+        <button id="btn-export-disk" class="btn btn-success">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Project to Disk
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- History Modal / Drawer -->
+  <div id="history-modal" class="modal-backdrop hidden">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <h3>Blueprint History & Saved Sessions</h3>
+        <button id="btn-close-history" class="btn-close">×</button>
+      </div>
+      <div class="modal-body" style="max-height: 480px; overflow-y: auto;">
+        <div id="history-items-list" class="history-list">
+          <p class="empty-state">No saved blueprints found.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Engine Configuration</h3>
+        <button id="btn-close-modal" class="btn-close">×</button>
+      </div>
+      <div class="modal-body">
+        <label>Engine Mode:</label>
+        <select id="setting-provider" class="form-input">
+          <option value="auto">Auto-detect Local Model (Ollama / LM Studio)</option>
+          <option value="ollama">Ollama (http://localhost:11434)</option>
+          <option value="lmstudio">LM Studio / LocalAI (http://localhost:1234)</option>
+          <option value="heuristic">Built-in Cognitive Heuristic Engine (Offline / Instant)</option>
+        </select>
+
+        <label style="margin-top:12px;">Endpoint URL:</label>
+        <input type="text" id="setting-endpoint" class="form-input" value="http://localhost:11434">
+
+        <label style="margin-top:12px;">Model Name:</label>
+        <input type="text" id="setting-model" class="form-input" value="llama3.2">
+        <small class="helper-text">Works with any local model: llama3, mistral, qwen2.5, phi3, deepseek, etc.</small>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-test-connection" class="btn btn-secondary">Test Connection</button>
+        <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

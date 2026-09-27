@@ -1,13 +1,22 @@
 # GESTALT // Cognitive Topology & Socratic Blueprint Extractor
 
-[![Status](https://img.shields.io/badge/status-active_prototype-06b6d4.svg)](#)
+[![Status](https://img.shields.io/badge/status-production_grade-06b6d4.svg)](#)
 [![Python](https://img.shields.io/badge/python-3.11+-3b82f6.svg)](#)
 [![FastAPI](https://img.shields.io/badge/framework-FastAPI-10b981.svg)](#)
 [![Local LLM](https://img.shields.io/badge/local_ai-Ollama%20%7C%20LM%20Studio-8b5cf6.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-27%2F27%20passed-10b981.svg)](#)
 [![License](https://img.shields.io/badge/license-MIT-f59e0b.svg)](#)
 
 > **Overcoming the Serialization Bottleneck in Human-AI Interaction.**  
 > Stop stuffing multi-dimensional mental blueprints through the 40-bit/second straw of text prompts. Extract topologies, resolve high-entropy architectural forks in 1 click, and synthesize runnable code, DevOps IaC, STRIDE threat models, and FinOps contracts.
+
+---
+
+## Live Dashboard Preview
+
+![Gestalt Studio Live Dashboard](docs/gestalt_dashboard.png)
+
+*Figure: Gestalt Cognitive Studio extracting a live mental topology from an eccentric seed prompt on an RTX 5060 local GPU (16ms latency), resolving Socratic bifurcation forks, and generating structured ADR markdown tables.*
 
 ---
 
@@ -98,7 +107,39 @@ graph TD
 
 ---
 
-## 3. Multi-Role IT Deliverables
+## 3. Major Platform Upgrades & Hardening
+
+The platform has undergone a comprehensive engineering overhaul addressing topology sprawl, visual duplication, UI freezing, markdown table rendering, and local LLM unblocking:
+
+### 1. Sprawl Prevention & Strict Node Budget
+* **Hard Component Limit**: Architectures are capped at 8 nodes total (`MAX_NODES = 8`).
+* **Semantic Stem Deduplication**: An automated filter inspects root stems (`stabiliz`, `autonom`, `verif`, `coordinat`, `supervis`, `monitor`, `detector`, `buffer`, `controller`). Rejects redundant components such as duplicate swarm controllers.
+* **Controlled Growth**: Exactly 1 specialized node can be added per resolved Socratic probe.
+
+### 2. Formal Invariant Validation
+* **Elimination of Trivial Tags**: Rejects 1-2 word tags (e.g. `stability`, `autonomy`) in favor of complete architectural constraints.
+* **Length and Word Validation**: Invariants must contain at least 5 words and 22 characters, specifying quantifiable metrics and bounds.
+* **Cap of 6 Invariants**: Focuses the architecture on critical guardrails without noise.
+
+### 3. Clean Convergence & Socratic Probe Retirement
+* **Convergence Progression**: Latent convergence advances predictably from 15-30% on initial seed projection up to 100% upon fork crystallization.
+* **Clean Probe Retirement**: Probe generation terminates once convergence reaches 85% or 3 forks are resolved, cleanly completing remaining probes at 100%.
+
+### 4. Rich ADR Markdown Table & List Formatting
+* **Structured Table Parsing**: Converts pipe-delimited ADR specifications into standard HTML `<table>` elements wrapped in `.table-wrap` with distinct alternating cell borders.
+* **Numbered and Bullet Lists**: Parses markdown list elements into `.md-list-item` containers with cyan index badges and bullet indicators.
+
+### 5. ActionLock Anti-Spam & UI Concurrency
+* **Global ActionLock**: An atomic lock mechanism blocks rapid repeated clicks on probe options and buttons.
+* **Crystallizing Spinner**: Sibling buttons are disabled immediately upon click, and the active choice displays an animated spinner (`Crystallizing Choice...`).
+* **Server-Side Idempotency**: Resolving an already-resolved fork returns the current state immediately without reprocessing.
+
+### 6. Event Loop Threadpool Unblocking
+* **Asynchronous Offloading**: CPU-bound and synchronous HTTP calls to local LLMs run in AnyIO threadpools, ensuring the FastAPI event loop never stalls during status checks or live polling.
+
+---
+
+## 4. Multi-Role IT Deliverables
 
 Gestalt is designed for every role across the engineering lifecycle:
 
@@ -113,59 +154,7 @@ Gestalt is designed for every role across the engineering lifecycle:
 
 ---
 
-## 4. Key Capabilities
-
-### 1. Zero-Prompt Topological Projection
-Enter a raw spark (*"Decentralized local-first collaborative canvas with peer-to-peer CRDT and zero cloud storage"*) or select an archetype chip. Gestalt instantly materializes:
-* **Stratified Component Nodes**: ID, tier, state model (`stateless`, `in-memory`, `persistent`, `crdt`, `append-only`), and latency budget.
-* **Information Channels**: Protocols (`grpc`, `websocket`, `event-stream`, `shared-mem`, `p2p`, `sync-rpc`) with synchronous vs. asynchronous distinction.
-* **Non-Negotiable System Invariants**: Critical architectural boundary contracts enforced at compile and runtime.
-
-### 2. High-Bandwidth Socratic Bifurcation Engine
-Instead of asking you to write 10 paragraphs of edge cases, Gestalt computes the **highest-entropy architectural forks** and presents 1-click decision cards:
-* **Example Fork**: *State Authority & Conflict Resolution*
-  * **Option A**: *Delta-CRDT (Last-Write-Wins + Vector Clocks)*: Mathematical convergence, zero coordinator, higher metadata overhead.
-  * **Option B**: *Optimistic Peer-Consensus (Dynamic Raft Quorum)*: Guaranteed ordering, requires 51% peer quorum.
-* **Clicking one option (1 second)** resolves the equivalent of 500 words of design choices, updates the graph in real-time, adds new sentinel nodes, and raises the **Latent Convergence Meter** (e.g. `30%` $\rightarrow$ `60%` $\rightarrow$ `90%`).
-
-### 3. Living Topology Canvas & Controls
-* **Smooth Zoom & Pan**: Use mouse wheel to zoom (0.35x to 2.5x) and drag to pan across large architectures.
-* **Custom Component Injection**: Click `+ Node` to inject custom domain modules directly into the live graph.
-* **PNG Image Export**: Click `PNG` to export high-resolution topology diagrams.
-* **Animated Particle Streams**: Directional pulses along edges show real-time information flow.
-* **Node Inspector**: Click any component to inspect state models, latency ceilings, and invariants.
-
-### 4. Dynamic Hardware Calibration & Multi-GPU Discovery
-* **Host Environment Detection**: Inspects CPU cores, system RAM, discrete GPUs, and platform runtimes across Windows, Linux, and macOS.
-* **Spec Tier Taxonomy**: Categorizes topologies into `edge_cpu`, `entry_gpu`, `mid_gpu`, `high_gpu`, and `ultra_multigpu`.
-* **Factual Model Fit Matrix**: Calculates 4-bit quantization VRAM requirements against installed local models, classifying each into 100% GPU VRAM Offload, Hybrid RAM spillover, or Exceeds Hardware Capacity.
-* **Automated GPU Reservations**: Synthesizes NVIDIA Container Toolkit device blocks and AMD ROCm `/dev/kfd` passthroughs directly into `docker-compose.yml`.
-
----
-
-## 5. Built-in Production & Frontier Archetypes
-
-Gestalt ships with a rich knowledge base of 16 battle-tested architectural paradigms, plus a deep semantic concept decomposer that extracts domain physics, biology, and mechanics from any arbitrary, eccentric, or unconventional seed:
-
-1. **Biodigital, Mycelium & Synthetic DNA**: Chemotactic receptors, hyphal calcium-wave action potential buses, enzymatic logic gates, oligonucleotide DNA memory vaults, luciferase photonic emitters, and biosecurity kill-switches.
-2. **Covert Physical Carriers & Sneakernet**: Cryptographic microdot staging, avian homing flight vectors, automated perch traps with dual-RFID scanners, air-gapped optical ledger stations, and pyrophoric zeroizers.
-3. **Fault-Tolerant Quantum & Post-Quantum Cryptography**: Cryogenic optical pumping, surface-code syndrome extraction, entangled photon routing, and hardware-accelerated ML-KEM post-quantum lattice co-processors.
-4. **LEO Satellite Constellations & Optical Mesh**: Ground phased-array tracking, Keplerian Doppler compensation, inter-satellite laser crosslinks (FSO), and rad-hardened triple-modular-redundant flight computers.
-5. **Intracortical BCI & Neuromorphic Decoders**: 1024-channel microelectrode arrays, analog front-end artifact filters, real-time spike sorting, kinematic intention decoders, and thermal tissue safety sentinels.
-6. **Severe-Weather Acoustic Triangulation & Harsh Actuation**: Phased acoustic transducer beamforming, storm-hardened IP68 airframes, TDOA acoustic locators, and turbulence-compensated inertial navigation.
-7. **Autonomous Multi-Agent Swarms**: Metacognitive supervisors, episodic memory graphs, specialist worker pools, and adversarial verification gates.
-8. **Local-First & P2P CRDT**: Vector clock sentries, gossip transports, WebRTC hole punchers, and relay witnesses.
-9. **Ultra-Low-Latency Trading (HFT)**: LMAX Disruptor lock-free ring buffers, kernel bypass (DPDK), and hardware pre-trade risk filters.
-10. **Authoritative Multiplayer Game Servers**: ECS world simulation loops, spatial BVH grids, and lag rewind compensation.
-11. **Real-Time Computer Vision**: Hardware-accelerated GPU pipelines (TensorRT/CUDA), ByteTrack spatial tracking, and zero-copy frame buffers.
-12. **IoT Edge Sensor Networks**: MQTT/CoAP brokers, time-series delta compressors, and adaptive cellular duty cycling.
-13. **Zero-Trust Cybersecurity & SIEM**: eBPF kernel hooks, network packet mirrors, automated quarantine gateways, and immutable audit logs.
-14. **Autonomous Robotics & Drones**: ROS2 micro-nodes, LiDAR SLAM occupancy grids, and hard real-time PID watchdog interlocks.
-15. **Developer Tooling & Compilers**: Language Server Protocol (LSP) handlers, incremental Tree-Sitter AST parsers, and sandbox runners.
-16. **Ultra-Low-Latency Media SFU**: WebRTC simulcast forwarding, ephemeral presence meshes, and CDN edge segment caches.
-17. **Deep Semantic Concept Decomposer**: Parses arbitrary, eccentric, or novel phrases (e.g. clockwork steam calculators, microbial fermentation monitors) into custom domain nodes, protocol edges, realistic physical invariants, and Socratic bifurcation probes.
-
-## 6. Cross-Platform Hardware Architecture & Multi-GPU Profiler
+## 5. Cross-Platform Hardware Architecture & Multi-GPU Profiler
 
 Gestalt integrates high-precision hardware discovery that probes physical and unified memory architectures to calibrate blueprint performance and generate hardware-accurate deliverables:
 
@@ -191,9 +180,33 @@ Gestalt calculates the exact 4-bit quantization (Q4_K_M) memory footprint and 4K
 
 ---
 
-## 7. Security Architecture & Threat Model
+## 6. Built-in Production & Frontier Archetypes
 
-Gestalt was built from the ground up with defensive engineering principles to ensure safe local execution:
+Gestalt ships with a rich knowledge base of 16 architectural paradigms, plus a deep semantic concept decomposer that extracts domain physics, biology, and mechanics from any arbitrary, eccentric, or unconventional seed:
+
+1. **Biodigital, Mycelium & Synthetic DNA**: Chemotactic receptors, hyphal calcium-wave action potential buses, enzymatic logic gates, oligonucleotide DNA memory vaults, luciferase photonic emitters, and biosecurity kill-switches.
+2. **Covert Physical Carriers & Sneakernet**: Cryptographic microdot staging, avian homing flight vectors, automated perch traps with dual-RFID scanners, air-gapped optical ledger stations, and pyrophoric zeroizers.
+3. **Fault-Tolerant Quantum & Post-Quantum Cryptography**: Cryogenic optical pumping, surface-code syndrome extraction, entangled photon routing, and hardware-accelerated ML-KEM post-quantum lattice co-processors.
+4. **LEO Satellite Constellations & Optical Mesh**: Ground phased-array tracking, Keplerian Doppler compensation, inter-satellite laser crosslinks (FSO), and rad-hardened triple-modular-redundant flight computers.
+5. **Intracortical BCI & Neuromorphic Decoders**: 1024-channel microelectrode arrays, analog front-end artifact filters, real-time spike sorting, kinematic intention decoders, and thermal tissue safety sentinels.
+6. **Severe-Weather Acoustic Triangulation & Harsh Actuation**: Phased acoustic transducer beamforming, storm-hardened IP68 airframes, TDOA acoustic locators, and turbulence-compensated inertial navigation.
+7. **Autonomous Multi-Agent Swarms**: Metacognitive supervisors, episodic memory graphs, specialist worker pools, and adversarial verification gates.
+8. **Local-First & P2P CRDT**: Vector clock sentries, gossip transports, WebRTC hole punchers, and relay witnesses.
+9. **Ultra-Low-Latency Trading (HFT)**: LMAX Disruptor lock-free ring buffers, kernel bypass (DPDK), and hardware pre-trade risk filters.
+10. **Authoritative Multiplayer Game Servers**: ECS world simulation loops, spatial BVH grids, and lag rewind compensation.
+11. **Real-Time Computer Vision**: Hardware-accelerated GPU pipelines (TensorRT/CUDA), ByteTrack spatial tracking, and zero-copy frame buffers.
+12. **IoT Edge Sensor Networks**: MQTT/CoAP brokers, time-series delta compressors, and adaptive cellular duty cycling.
+13. **Zero-Trust Cybersecurity & SIEM**: eBPF kernel hooks, network packet mirrors, automated quarantine gateways, and immutable audit logs.
+14. **Autonomous Robotics & Drones**: ROS2 micro-nodes, LiDAR SLAM occupancy grids, and hard real-time PID watchdog interlocks.
+15. **Developer Tooling & Compilers**: Language Server Protocol (LSP) handlers, incremental Tree-Sitter AST parsers, and sandbox runners.
+16. **Ultra-Low-Latency Media SFU**: WebRTC simulcast forwarding, ephemeral presence meshes, and CDN edge segment caches.
+17. **Dynamic Semantic Concept Decomposer**: Analyzes eccentric or novel raw prompts into domain-accurate components, communication edges, physical invariants, and high-entropy Socratic bifurcation probes.
+
+---
+
+## 7. Security Architecture & Defensive Controls
+
+Gestalt is engineered with defensive principles to guarantee secure local execution:
 
 | Threat Vector | Mitigation Strategy Implemented |
 | :--- | :--- |
@@ -224,15 +237,15 @@ pip install fastapi uvicorn pydantic requests pytest pytest-asyncio httpx
 ### Running the Studio
 ```bash
 # Double-click run.bat or run via terminal:
-python -m uvicorn server:app --host 127.0.0.1 --port 8000 --reload
+python server.py
 ```
 Open your browser to: **`http://127.0.0.1:8000`**
 
 ### Running the Test & Stress Suite
 ```bash
-pytest tests/test_hardware_and_stress.py -v
+pytest
 ```
-Executes 18 automated unit and stress tests validating live host detection, cross-platform mocking (Linux ROCm, multi-GPU rigs, macOS Metal), model fit evaluations, dynamic eccentric raw prompt projections, and high-concurrency workloads.
+Executes 27 automated unit, integration, stress, and idempotency tests validating live host detection, cross-platform mocking (Linux ROCm, multi-GPU rigs, macOS Metal), model fit evaluations, dynamic eccentric raw prompt projections, rapid concurrent clicks, and sprawl prevention.
 
 ### Exporting Full Project Scaffolding
 Click **"Export All IT Deliverables to Disk"** inside the app. It writes all files to `export/<session_id>/`:

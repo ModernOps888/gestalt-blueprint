@@ -121,7 +121,7 @@ async def get_index():
     return FileResponse(index_path)
 
 @app.get("/api/status")
-async def get_model_status():
+def get_model_status():
     """Checks local model connectivity and hardware capabilities."""
     health = model_client.check_health()
     profile = HardwareSpecProfiler.get_profile()
@@ -134,7 +134,7 @@ async def get_model_status():
     }
 
 @app.get("/api/hardware")
-async def get_hardware_profile():
+def get_hardware_profile():
     """Returns detailed cross-platform hardware profile and GPU topologies."""
     profile = HardwareSpecProfiler.get_profile()
     return profile.model_dump()
@@ -146,7 +146,7 @@ class SettingsRequest(BaseModel):
     api_key: Optional[str] = None
 
 @app.post("/api/settings")
-async def update_settings(req: SettingsRequest):
+def update_settings(req: SettingsRequest):
     """Updates engine configuration (local model, endpoint, or optional cloud key)."""
     if req.provider:
         model_client.provider = req.provider
@@ -163,7 +163,7 @@ async def update_settings(req: SettingsRequest):
     }
 
 @app.get("/api/sessions")
-async def list_sessions():
+def list_sessions():
     """Lists all saved blueprints in history."""
     items = []
     for s in sessions.values():
@@ -179,7 +179,7 @@ async def list_sessions():
     return items
 
 @app.delete("/api/session/{session_id}")
-async def delete_session(session_id: str):
+def delete_session(session_id: str):
     """Deletes a session from memory and disk safely."""
     safe_id = _sanitize_session_id(session_id)
     if safe_id in sessions:
@@ -191,7 +191,7 @@ async def delete_session(session_id: str):
     return {"status": "deleted", "session_id": safe_id}
 
 @app.post("/api/project")
-async def project_seed(req: ProjectRequest):
+def project_seed(req: ProjectRequest):
     """Takes a raw seed concept and projects the initial mental topology."""
     if not req.seed.strip():
         raise HTTPException(status_code=400, detail="Seed cannot be empty.")
@@ -209,14 +209,14 @@ async def project_seed(req: ProjectRequest):
     return state.model_dump()
 
 @app.get("/api/session/{session_id}")
-async def get_session(session_id: str):
+def get_session(session_id: str):
     safe_id = _sanitize_session_id(session_id)
     if safe_id not in sessions:
         raise HTTPException(status_code=404, detail="Session not found.")
     return sessions[safe_id].model_dump()
 
 @app.post("/api/probe/resolve")
-async def resolve_probe(req: ProbeResolveRequest):
+def resolve_probe(req: ProbeResolveRequest):
     """Resolves an architectural fork and updates the topology."""
     safe_id = _sanitize_session_id(req.session_id)
     if safe_id not in sessions:
@@ -241,7 +241,7 @@ async def resolve_probe(req: ProbeResolveRequest):
     return updated_state.model_dump()
 
 @app.post("/api/synthesize")
-async def synthesize_blueprint(req: SynthesizeRequest):
+def synthesize_blueprint(req: SynthesizeRequest):
     """Compiles the crystallized state into ADR, Mermaid, and Code."""
     safe_id = _sanitize_session_id(req.session_id)
     if safe_id not in sessions:
@@ -274,7 +274,7 @@ class CustomEdgeRequest(BaseModel):
     async_flow: bool = False
 
 @app.post("/api/node/custom")
-async def add_custom_node(req: CustomNodeRequest):
+def add_custom_node(req: CustomNodeRequest):
     safe_id = _sanitize_session_id(req.session_id)
     if safe_id not in sessions:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -298,7 +298,7 @@ async def add_custom_node(req: CustomNodeRequest):
     return state.model_dump()
 
 @app.post("/api/edge/custom")
-async def add_custom_edge(req: CustomEdgeRequest):
+def add_custom_edge(req: CustomEdgeRequest):
     safe_id = _sanitize_session_id(req.session_id)
     if safe_id not in sessions:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -321,7 +321,7 @@ async def add_custom_edge(req: CustomEdgeRequest):
     return state.model_dump()
 
 @app.post("/api/export")
-async def export_code(req: ExportRequest):
+def export_code(req: ExportRequest):
     """Exports generated files for all IT roles safely confined within the export directory."""
     safe_id = _sanitize_session_id(req.session_id)
     if safe_id not in sessions:

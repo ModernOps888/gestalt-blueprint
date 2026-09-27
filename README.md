@@ -124,8 +124,8 @@ Enter a raw spark (*"Decentralized local-first collaborative canvas with peer-to
 ### 2. High-Bandwidth Socratic Bifurcation Engine
 Instead of asking you to write 10 paragraphs of edge cases, Gestalt computes the **highest-entropy architectural forks** and presents 1-click decision cards:
 * **Example Fork**: *State Authority & Conflict Resolution*
-  * **Option A**: *Delta-CRDT (Last-Write-Wins + Vector Clocks)* — Mathematical convergence, zero coordinator, higher metadata overhead.
-  * **Option B**: *Optimistic Peer-Consensus (Dynamic Raft Quorum)* — Guaranteed ordering, requires 51% peer quorum.
+  * **Option A**: *Delta-CRDT (Last-Write-Wins + Vector Clocks)*: Mathematical convergence, zero coordinator, higher metadata overhead.
+  * **Option B**: *Optimistic Peer-Consensus (Dynamic Raft Quorum)*: Guaranteed ordering, requires 51% peer quorum.
 * **Clicking one option (1 second)** resolves the equivalent of 500 words of design choices, updates the graph in real-time, adds new sentinel nodes, and raises the **Latent Convergence Meter** (e.g. `30%` $\rightarrow$ `60%` $\rightarrow$ `90%`).
 
 ### 3. Living Topology Canvas & Controls
@@ -137,20 +137,27 @@ Instead of asking you to write 10 paragraphs of edge cases, Gestalt computes the
 
 ---
 
-## 5. Built-in Production Archetypes
+## 5. Built-in Production & Frontier Archetypes
 
-Gestalt ships with a rich knowledge base of 10+ battle-tested architectural paradigms, plus a dynamic compositional synthesizer for arbitrary ideas:
+Gestalt ships with a rich knowledge base of 16 battle-tested architectural paradigms, plus a deep semantic concept decomposer that extracts domain physics, biology, and mechanics from any arbitrary, eccentric, or unconventional seed:
 
-1. **Autonomous Multi-Agent Swarms**: Supervisor, episodic memory graph, specialist workers, adversarial verifiers.
-2. **Local-First & P2P CRDT**: Vector clock sentries, gossip transports, WebRTC hole punchers, relay witnesses.
-3. **Ultra-Low-Latency Trading (HFT)**: LMAX Disruptor lock-free ring buffers, kernel bypass (DPDK), hardware pre-trade risk filters.
-4. **Authoritative Multiplayer Game Servers**: ECS world simulation loops, spatial BVH grids, lag rewind compensation.
-5. **Real-Time Computer Vision**: Hardware-accelerated GPU pipelines (TensorRT/CUDA), ByteTrack spatial tracking, zero-copy frames.
-6. **IoT Edge Sensor Networks**: MQTT/CoAP brokers, time-series delta compressors, adaptive cellular duty cycling.
-7. **Zero-Trust Cybersecurity & SIEM**: eBPF kernel hooks, network packet mirrors, automated quarantine gateways, immutable audit logs.
-8. **Autonomous Robotics & Drones**: ROS2 micro-nodes, LiDAR SLAM occupancy grids, hard real-time PID watchdog interlocks.
-9. **Developer Tooling & Compilers**: Language Server Protocol (LSP) handlers, incremental Tree-Sitter AST parsers, sandbox runners.
-10. **Ultra-Low-Latency Media SFU**: WebRTC simulcast forwarding, ephemeral presence meshes, CDN edge segment caches.
+1. **Biodigital, Mycelium & Synthetic DNA**: Chemotactic receptors, hyphal calcium-wave action potential buses, enzymatic logic gates, oligonucleotide DNA memory vaults, luciferase photonic emitters, and biosecurity kill-switches.
+2. **Covert Physical Carriers & Sneakernet**: Cryptographic microdot staging, avian homing flight vectors, automated perch traps with dual-RFID scanners, air-gapped optical ledger stations, and pyrophoric zeroizers.
+3. **Fault-Tolerant Quantum & Post-Quantum Cryptography**: Cryogenic optical pumping, surface-code syndrome extraction, entangled photon routing, and hardware-accelerated ML-KEM post-quantum lattice co-processors.
+4. **LEO Satellite Constellations & Optical Mesh**: Ground phased-array tracking, Keplerian Doppler compensation, inter-satellite laser crosslinks (FSO), and rad-hardened triple-modular-redundant flight computers.
+5. **Intracortical BCI & Neuromorphic Decoders**: 1024-channel microelectrode arrays, analog front-end artifact filters, real-time spike sorting, kinematic intention decoders, and thermal tissue safety sentinels.
+6. **Severe-Weather Acoustic Triangulation & Harsh Actuation**: Phased acoustic transducer beamforming, storm-hardened IP68 airframes, TDOA acoustic locators, and turbulence-compensated inertial navigation.
+7. **Autonomous Multi-Agent Swarms**: Metacognitive supervisors, episodic memory graphs, specialist worker pools, and adversarial verification gates.
+8. **Local-First & P2P CRDT**: Vector clock sentries, gossip transports, WebRTC hole punchers, and relay witnesses.
+9. **Ultra-Low-Latency Trading (HFT)**: LMAX Disruptor lock-free ring buffers, kernel bypass (DPDK), and hardware pre-trade risk filters.
+10. **Authoritative Multiplayer Game Servers**: ECS world simulation loops, spatial BVH grids, and lag rewind compensation.
+11. **Real-Time Computer Vision**: Hardware-accelerated GPU pipelines (TensorRT/CUDA), ByteTrack spatial tracking, and zero-copy frame buffers.
+12. **IoT Edge Sensor Networks**: MQTT/CoAP brokers, time-series delta compressors, and adaptive cellular duty cycling.
+13. **Zero-Trust Cybersecurity & SIEM**: eBPF kernel hooks, network packet mirrors, automated quarantine gateways, and immutable audit logs.
+14. **Autonomous Robotics & Drones**: ROS2 micro-nodes, LiDAR SLAM occupancy grids, and hard real-time PID watchdog interlocks.
+15. **Developer Tooling & Compilers**: Language Server Protocol (LSP) handlers, incremental Tree-Sitter AST parsers, and sandbox runners.
+16. **Ultra-Low-Latency Media SFU**: WebRTC simulcast forwarding, ephemeral presence meshes, and CDN edge segment caches.
+17. **Deep Semantic Concept Decomposer**: Parses arbitrary, eccentric, or novel phrases (e.g. clockwork steam calculators, microbial fermentation monitors) into custom domain nodes, protocol edges, realistic physical invariants, and Socratic bifurcation probes.
 
 ---
 

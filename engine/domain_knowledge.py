@@ -13,47 +13,71 @@ class DomainKnowledge:
     def match_and_project(cls, seed: str) -> Optional[BlueprintState]:
         s = seed.lower()
 
-        # 1. AI Agents & Autonomous Swarms
+        # 1. Bio-Digital, Synthetic Biology, Mycelium & DNA Storage
+        if any(k in s for k in ["mushroom", "mycelium", "fungal", "spore", "bioluminescent", "dna storage", "dna", "crispr", "enzyme", "cellular compute", "biological", "organoid", "bio-digital", "synthetic biology", "chloroplast"]):
+            return cls._archetype_biodigital(seed)
+
+        # 2. Covert Physical Carriers, Pigeon Postal & Airgap Sneakernet
+        if any(k in s for k in ["pigeon", "avian", "carrier pigeon", "postal network", "steganograph", "covert channel", "microfilm", "sneakernet", "airgap courier", "microdot", "air-gap"]):
+            return cls._archetype_physical_courier(seed)
+
+        # 3. Quantum Information & Post-Quantum Cryptography
+        if any(k in s for k in ["quantum", "qubit", "qkd", "superposition", "entanglement", "post-quantum", "decoherence", "ion-trap", "cryostat"]):
+            return cls._archetype_quantum(seed)
+
+        # 4. Space, Orbital & Satellite Constellations
+        if any(k in s for k in ["satellite", "constellation", "orbital", "inter-satellite", "doppler", "leo", "spacecraft", "ground station", "laser mesh", "starlink", "cubesat", "spaceborne"]):
+            return cls._archetype_space_constellation(seed)
+
+        # 5. Brain-Computer Interfaces (BCI) & Neurotechnology
+        if any(k in s for k in ["bci", "brain", "neural interface", "eeg", "ecog", "spike-sorting", "cortex", "intracortical", "neuroprosthetic", "neuromorphic"]):
+            return cls._archetype_neurotech_bci(seed)
+
+        # 6. Extreme Environment, Harsh Weather & Acoustic Triangulation
+        if any(k in s for k in ["acoustic", "hydrophone", "hurricane", "extreme weather", "harsh environment", "sonar array", "subterranean acoustic", "tornado", "wind gale", "infrasonic", "triangulation"]):
+            return cls._archetype_harsh_acoustic(seed)
+
+        # 7. AI Agents & Autonomous Swarms
         if any(k in s for k in ["swarm", "agent", "multi-agent", "autonomous", "reasoning", "orchestrat", "rag", "bot"]):
             return cls._archetype_agent_swarm(seed)
 
-        # 2. Local-First / P2P / CRDT
+        # 8. Local-First / P2P / CRDT
         if any(k in s for k in ["p2p", "mesh", "decentral", "crdt", "local-first", "offline", "sync"]):
             return cls._archetype_p2p_crdt(seed)
 
-        # 3. High-Frequency Trading & Low-Latency FinTech
+        # 9. High-Frequency Trading & Low-Latency FinTech
         if any(k in s for k in ["trad", "market", "order", "exchange", "arbitrage", "financial", "crypto", "signal", "matching"]):
             return cls._archetype_trading_engine(seed)
 
-        # 4. Multiplayer Games & Physics Simulation
+        # 10. Multiplayer Games & Physics Simulation
         if any(k in s for k in ["game", "multiplayer", "physics", "simulation", "ecs", "tick", "world"]):
             return cls._archetype_game_server(seed)
 
-        # 5. Computer Vision & Real-Time Multimodal Pipelines
+        # 11. Computer Vision & Real-Time Multimodal Pipelines
         if any(k in s for k in ["vision", "camera", "video", "rtsp", "image", "detection", "yolo", "tracking", "stream"]):
             return cls._archetype_computer_vision(seed)
 
-        # 6. IoT Sensors & Edge Telemetry
+        # 12. IoT Sensors & Edge Telemetry
         if any(k in s for k in ["iot", "sensor", "telemetry", "mqtt", "hardware", "device", "edge"]):
             return cls._archetype_iot_edge(seed)
 
-        # 7. Cybersecurity, Zero-Trust & SIEM
+        # 13. Cybersecurity, Zero-Trust & SIEM
         if any(k in s for k in ["security", "zero-trust", "firewall", "siem", "threat", "ebpf", "quarantine", "audit"]):
             return cls._archetype_cybersecurity(seed)
 
-        # 8. Autonomous Robotics & Drones
+        # 14. Autonomous Robotics & Drones
         if any(k in s for k in ["robot", "drone", "lidar", "slam", "ros", "motor", "autopilot", "navigation"]):
             return cls._archetype_robotics(seed)
 
-        # 9. Developer Tools, Compilers & Code Synthesis
+        # 15. Developer Tools, Compilers & Code Synthesis
         if any(k in s for k in ["compiler", "devtool", "ast", "code", "ide", "syntax", "lsp", "linter"]):
             return cls._archetype_devtools(seed)
 
-        # 10. Real-Time Media & Social Streaming
+        # 16. Real-Time Media & Social Streaming
         if any(k in s for k in ["social", "feed", "webrtc", "sfu", "live", "chat", "presence", "broadcast"]):
             return cls._archetype_media_streaming(seed)
 
-        # 11. Dynamic Compositional Synthesizer (Catches ANY arbitrary concept)
+        # 17. Dynamic Semantic Concept Decomposer (Catches ANY arbitrary odd / custom concept)
         return cls._dynamic_compositional_synthesizer(seed)
 
     # -------------------------------------------------------------------------
@@ -592,88 +616,590 @@ class DomainKnowledge:
         return BlueprintState(seed=seed, title="Ultra-Low-Latency Media Streaming & Presence Engine", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
 
     # -------------------------------------------------------------------------
-    # 11. DYNAMIC COMPOSITIONAL SYNTHESIZER (For ANY arbitrary concept)
+    # 11. BIODIGITAL, SYNTHETIC BIOLOGY & DNA SYSTEMS
     # -------------------------------------------------------------------------
     @classmethod
-    def _dynamic_compositional_synthesizer(cls, seed: str) -> BlueprintState:
-        """
-        Dynamically decomposes an arbitrary user phrase into custom nodes,
-        relations, and deep Socratic probes based on extracted keywords.
-        """
-        words = re.findall(r'\b[a-zA-Z]{3,}\b', seed)
-        clean_seed = " ".join(words[:12]) if words else "Custom Distributed System"
-        
-        # Derive custom title
-        title_subject = words[0].capitalize() if words else "Dynamic"
-        title = f"{title_subject} Adaptive Architecture Engine"
-
+    def _archetype_biodigital(cls, seed: str) -> BlueprintState:
         nodes = [
-            Node(id="ingress_gateway", label="High-Throughput Ingestion Gateway", tier="gateway", state_type="stateless", latency_ms=8, description=f"Validates, normalizes, and routes incoming {clean_seed} intents"),
-            Node(id="domain_orchestrator", label="Core Domain Orchestrator", tier="compute", state_type="in-memory", latency_ms=25, description="Maintains domain state machine, execution policies, and invariants"),
-            Node(id="reactive_event_bus", label="Reactive Event Backbone", tier="compute", state_type="in-memory", latency_ms=4, description="Zero-allocation event pipeline for asynchronous task distribution"),
-            Node(id="state_ledger", label="Primary State Store & Ledger", tier="state", state_type="persistent", latency_ms=18, description="Durable persistence layer guaranteeing consistency and recovery"),
-            Node(id="edge_dispatcher", label="Outbound Dispatch & Presentation Layer", tier="presentation", state_type="stateless", latency_ms=12, description="Formats results and notifies clients or physical actuators")
+            Node(id="chemoreceptor_bed", label="Chemotactic & Optical Receptor Substrate", tier="gateway", state_type="stateless", latency_ms=15, description="Ingests nutrient gradients, photonic pulses, and chemical signals"),
+            Node(id="hyphal_transduction_bus", label="Hyphal Calcium Wave & Action Potential Bus", tier="compute", state_type="in-memory", latency_ms=45, description="Bio-electrical membrane depolarization and vesicle transport across mycelial network"),
+            Node(id="enzymatic_logic_gate", label="Enzymatic Biocomputing Reaction Gate", tier="compute", state_type="in-memory", latency_ms=80, description="Catalytic protein-state switches executing metabolic logic gates"),
+            Node(id="oligonucleotide_dna_vault", label="Synthetic DNA Molecular Memory Vault", tier="state", state_type="persistent", latency_ms=250, description="High-density base-pair oligonucleotide strand storage ledger"),
+            Node(id="luciferase_photonic_emitter", label="Luciferase Photonic & Biochemical Actuator", tier="presentation", state_type="stateless", latency_ms=20, description="Enzymatic light emission and biochemical quorum-sensing exudation"),
+            Node(id="biocontainment_killswitch", label="Synthetic Biosecurity Kill-Switch Sentinel", tier="security", state_type="stateless", latency_ms=5, description="Continuous genetic drift monitor with metabolic apoptosis interlock")
         ]
-
         edges = [
-            Edge(source="ingress_gateway", target="domain_orchestrator", protocol="sync-rpc", label="Validated Command"),
-            Edge(source="domain_orchestrator", target="state_ledger", protocol="sync-rpc", label="State Commit"),
-            Edge(source="domain_orchestrator", target="reactive_event_bus", protocol="event-stream", label="Domain Events", async_flow=True),
-            Edge(source="reactive_event_bus", target="edge_dispatcher", protocol="event-stream", label="State Projections", async_flow=True)
+            Edge(source="chemoreceptor_bed", target="hyphal_transduction_bus", protocol="bio-electrical", label="Calcium Wave Depolarization"),
+            Edge(source="hyphal_transduction_bus", target="enzymatic_logic_gate", protocol="molecular-binding", label="Enzyme Substrate Cascade"),
+            Edge(source="enzymatic_logic_gate", target="oligonucleotide_dna_vault", protocol="sync-rpc", label="Base-Pair Synthesis Commit"),
+            Edge(source="enzymatic_logic_gate", target="luciferase_photonic_emitter", protocol="photonic-emission", label="Luciferase Pulse Trigger", async_flow=True),
+            Edge(source="enzymatic_logic_gate", target="biocontainment_killswitch", protocol="sync-rpc", label="Metabolic Drift Telemetry"),
+            Edge(source="biocontainment_killswitch", target="chemoreceptor_bed", protocol="chemical-diffusion", label="Apoptotic Invalidation Loop")
         ]
-
         invariants = [
-            Invariant(statement=f"Commands for {clean_seed} must pass strict input schema validation prior to processing", category="security", severity="critical"),
-            Invariant(statement="End-to-end processing pipeline must execute within latency budget without starvation", category="performance", severity="critical"),
-            Invariant(statement="State mutations must be replayable from durable event log during node crash recovery", category="consistency", severity="critical")
+            Invariant(statement="Genetic drift and recombination must not exceed 0.001% per metabolic cycle", category="security", severity="critical"),
+            Invariant(statement="Hyphal network conductivity requires maintaining continuous hydration and ATP pool recovery", category="performance", severity="critical"),
+            Invariant(statement="Luciferase photon burst pulse rate is bounded by cellular ATP pool regeneration cycles", category="consistency", severity="critical")
         ]
-
         probes = [
             ProbeFork(
-                dimension="Consistency & Concurrency Model",
-                question=f"How should concurrent operations in {clean_seed} be reconciled?",
-                cognitive_tension="Optimistic Concurrency with automated rollback provides high throughput under light contention, while Pessimistic Lock-Free Pipelines guarantee strict ordering.",
+                dimension="Signal Propagation Dynamics",
+                question="How should signals propagate through the living biological substrate?",
+                cognitive_tension="Fast bio-electrical action potentials deliver sub-second velocity across hyphal membranes, while biochemical quorum-sensing diffusion provides permanent environmental persistence.",
                 options=[
                     ProbeOption(
-                        id="optimistic_concurrency",
-                        label="Optimistic Concurrency Control (Version Vectors)",
-                        description="Permits parallel processing; detects conflicting writes and triggers retry loops.",
-                        tradeoff="Ultra-high throughput under normal load; higher retry churn under extreme hotspot contention.",
-                        added_invariants=["Transactions must include monotonic version tag for conflict detection"]
+                        id="action_potential_depolarization",
+                        label="Action Potential Depolarization Waves",
+                        description="Bio-electrical pulse propagation across cell membranes at 0.5 m/s conduction velocity.",
+                        tradeoff="Fast sub-second response; requires active nutrient hydration and metabolic electrolyte maintenance.",
+                        added_invariants=["Electrolyte gradient must be maintained across cellular membranes"]
                     ),
                     ProbeOption(
-                        id="partitioned_single_writer",
-                        label="Partitioned Single-Writer Ring Buffer (Deterministic)",
-                        description="Pins each domain entity to an isolated CPU thread; eliminates locking entirely.",
-                        tradeoff="Guarantees zero lock contention; requires predictable hash partition distribution.",
-                        added_nodes=[
-                            {"id": "partition_router", "label": "Key-Partitioned Router", "tier": "compute", "state_type": "in-memory", "latency_ms": 2, "description": "Consistent-hashing thread allocator"}
-                        ],
-                        added_edges=[
-                            {"source": "ingress_gateway", "target": "partition_router", "protocol": "sync-rpc", "label": "Partition Routing"}
-                        ],
-                        added_invariants=["Entity operations must execute on dedicated partition thread"]
+                        id="quorum_sensing_diffusion",
+                        label="Quorum-Sensing Exudation Diffusion",
+                        description="Signaling enzymes diffuse through physical substrate to establish persistent chemical concentration gradients.",
+                        tradeoff="Zero electrical power consumption; propagation latency scales with physical distance.",
+                        added_invariants=["Chemical concentration must exceed quorum threshold for downstream state change"]
                     )
                 ]
             ),
             ProbeFork(
-                dimension="Failure Boundary & Degradation",
-                question="When a sub-component or downstream dependency fails, how should the architecture isolate it?",
-                cognitive_tension="Strict Circuit Breaking aborts early to preserve cluster integrity, while Graceful Stale Fallback serves degraded heuristics to maintain 100% uptime.",
+                dimension="Molecular Data Persistence Strategy",
+                question="How should synthetic information be committed to biological storage?",
+                cognitive_tension="In-vivo plasmid vectors enable cellular self-replication and natural repair, while in-vitro lyophilized DNA arrays provide centuries of archival stability.",
                 options=[
                     ProbeOption(
-                        id="strict_circuit_breaker",
-                        label="Strict Circuit Breaker (Fail-Fast Isolation)",
-                        description="Halt downstream calls instantly when error rate exceeds 5%; protect remaining nodes.",
-                        tradeoff="Clients receive clear immediate error; prevents cascading outages across the cluster.",
-                        added_invariants=["Circuit breaker trips after 3 consecutive timeouts or 10% error threshold"]
+                        id="invivo_plasmid_replication",
+                        label="In-Vivo Replicating Plasmid Vectors",
+                        description="Stores state inside living cellular hosts with automatic mitosis and DNA polymerase error repair.",
+                        tradeoff="Self-sustaining storage; requires containment safeguards against environmental escape.",
+                        added_invariants=["Plasmid copy number per cell must be strictly bounded between 10 and 50"]
                     ),
                     ProbeOption(
-                        id="graceful_heuristic_fallback",
-                        label="Graceful Heuristic Fallback (Stale-While-Revalidate)",
-                        description="Serve cached snapshot or synthetic heuristic if downstream is unresponsive.",
-                        tradeoff="Maintains continuous client uptime; data may temporarily reflect slightly stale state.",
-                        added_invariants=["Degraded responses must explicitly set 'X-Degraded-Fallback: true'"]
+                        id="lyophilized_dna_matrix",
+                        label="Lyophilized In-Vitro DNA Matrix",
+                        description="Stores state in freeze-dried oligonucleotide base-pair blocks read via microfluidic nanopore sequencers.",
+                        tradeoff="Extreme century-scale archival stability; read operations require microfluidic sequencing steps.",
+                        added_invariants=["Nanopore sequencing error rate must be corrected with Reed-Solomon base parity"]
+                    )
+                ]
+            )
+        ]
+        return BlueprintState(seed=seed, title="Biodigital Mycelial & Synthetic Molecular Engine", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
+
+    # -------------------------------------------------------------------------
+    # 12. QUANTUM INFORMATION & POST-QUANTUM CRYPTOGRAPHY
+    # -------------------------------------------------------------------------
+    @classmethod
+    def _archetype_quantum(cls, seed: str) -> BlueprintState:
+        nodes = [
+            Node(id="cryo_qubit_prep", label="Cryogenic Qubit Initialization & Optical Pumper", tier="gateway", state_type="stateless", latency_ms=5, description="Millikelvin state initialization, microwave pulse shaping, and laser pumping"),
+            Node(id="surface_code_syndrome", label="Surface-Code Quantum Error Correction Core", tier="compute", state_type="in-memory", latency_ms=1, description="Real-time stabilizer syndrome extraction and Pauli frame tracking"),
+            Node(id="entangled_photon_router", label="Bell-State Entangled Photon Distributor", tier="compute", state_type="in-memory", latency_ms=2, description="Polarization-entangled photon pair generation and QKD routing"),
+            Node(id="post_quantum_cryptoprocessor", label="Post-Quantum Lattice Co-Processor (ML-KEM)", tier="gateway", state_type="stateless", latency_ms=8, description="Hardware accelerated lattice-based encapsulation and signature verification"),
+            Node(id="quantum_state_tomography", label="Non-Demolition Quantum State Tomography", tier="state", state_type="persistent", latency_ms=12, description="Weak measurement readout and density matrix reconstruction"),
+            Node(id="cryostat_thermal_sentinel", label="Dilution Refrigerator Thermal & Noise Sentinel", tier="security", state_type="stateless", latency_ms=3, description="Phonon dissipation monitor and magnetic flux noise interlock")
+        ]
+        edges = [
+            Edge(source="cryo_qubit_prep", target="surface_code_syndrome", protocol="cryo-bus", label="Initialized Qubit Lattice"),
+            Edge(source="surface_code_syndrome", target="entangled_photon_router", protocol="optical-qubit-bus", label="Entangled Photonic Channel"),
+            Edge(source="entangled_photon_router", target="post_quantum_cryptoprocessor", protocol="pcie-dma", label="Sifted Quantum Key Bits", async_flow=True),
+            Edge(source="surface_code_syndrome", target="quantum_state_tomography", protocol="sync-rpc", label="Stabilizer Syndrome Readout"),
+            Edge(source="quantum_state_tomography", target="cryostat_thermal_sentinel", protocol="sync-rpc", label="Measurement Heat Dissipation"),
+            Edge(source="cryostat_thermal_sentinel", target="cryo_qubit_prep", protocol="sync-rpc", label="Thermal Gate Interlock")
+        ]
+        invariants = [
+            Invariant(statement="Qubit coherence window must not exceed T2 dephasing threshold (120 microseconds) before syndrome extraction", category="performance", severity="critical"),
+            Invariant(statement="No-cloning theorem strictly enforced across all intermediate quantum state registers", category="security", severity="critical"),
+            Invariant(statement="Cryostat mixing chamber temperature must remain below 15 millikelvin to prevent thermal quasiparticle noise", category="fault-tolerance", severity="critical")
+        ]
+        probes = [
+            ProbeFork(
+                dimension="Quantum Key Distribution Protocol",
+                question="How should entangled cryptographic keys be distributed over distance?",
+                cognitive_tension="Discrete-Variable (DV) Single-Photon QKD offers unconditional information-theoretic security over long fiber links, while Continuous-Variable (CV) Coherent QKD operates over existing telecommunication optical multiplexers.",
+                options=[
+                    ProbeOption(
+                        id="discrete_variable_qkd",
+                        label="Discrete-Variable Single-Photon QKD",
+                        description="Single-photon avalanche photodiode detection with decoy-state protocol.",
+                        tradeoff="Highest security margin over long distances; requires specialized cryogenic single-photon detectors.",
+                        added_invariants=["Dark-count rate of single photon detectors must remain below 10 Hz"]
+                    ),
+                    ProbeOption(
+                        id="continuous_variable_qkd",
+                        label="Continuous-Variable Coherent Homodyne QKD",
+                        description="Encodes keys onto continuous quadrature amplitudes of coherent light states.",
+                        tradeoff="Compatible with standard telecom fiber and room-temperature homodyne receivers; shorter distance reach.",
+                        added_invariants=["Local oscillator phase reference must be locked within 0.05 radians"]
+                    )
+                ]
+            ),
+            ProbeFork(
+                dimension="Quantum Fault-Tolerance Architecture",
+                question="How should physical qubit noise and decoherence be mitigated?",
+                cognitive_tension="Rotated Surface Codes use 2D nearest-neighbor coupling with high physical qubit overhead, while Quantum Low-Density Parity-Check (qLDPC) codes achieve 10x qubit efficiency with long-range interconnects.",
+                options=[
+                    ProbeOption(
+                        id="rotated_surface_code",
+                        label="Planar Rotated Surface Code",
+                        description="Nearest-neighbor planar geometry with localized syndrome extraction cycles.",
+                        tradeoff="High physical-to-logical qubit ratio (1000:1); straightforward 2D chip fabrication.",
+                        added_invariants=["Surface code cycle time must execute within 1 microsecond"]
+                    ),
+                    ProbeOption(
+                        id="qldpc_bivariate_bicycle",
+                        label="Quantum LDPC Non-Local Interconnect Code",
+                        description="Long-range coherent couplers enabling high code rates with 10x fewer physical qubits.",
+                        tradeoff="Extreme reduction in physical hardware footprint; requires complex 3D waveguide or photonic routing.",
+                        added_invariants=["Long-range coupler crosstalk must remain under -40 dB"]
+                    )
+                ]
+            )
+        ]
+        return BlueprintState(seed=seed, title="Fault-Tolerant Quantum & Post-Quantum Cryptographic Engine", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
+
+    # -------------------------------------------------------------------------
+    # 13. SPACE, ORBITAL & SATELLITE CONSTELLATIONS
+    # -------------------------------------------------------------------------
+    @classmethod
+    def _archetype_space_constellation(cls, seed: str) -> BlueprintState:
+        nodes = [
+            Node(id="ground_phased_array", label="Phased-Array Ground Station Transceiver", tier="gateway", state_type="stateless", latency_ms=45, description="S/Ka-band tracking array with adaptive beamforming and Doppler compensation"),
+            Node(id="ephemeris_orbit_engine", label="Keplerian Orbit Dynamics & Doppler Engine", tier="compute", state_type="in-memory", latency_ms=10, description="Real-time orbital propagation and frequency drift tracking"),
+            Node(id="fso_laser_crosslink", label="Inter-Satellite Free-Space Optical (FSO) Laser Mesh", tier="compute", state_type="in-memory", latency_ms=15, description="Sub-gigabit optical ISL transceiver with fine steering mirror gimbal"),
+            Node(id="tmr_flight_computer", label="Rad-Hardened TMR Flight Computer", tier="compute", state_type="stateless", latency_ms=5, description="Triple-modular redundant spaceborne computer running fault-tolerant voting logic"),
+            Node(id="earth_obs_payload", label="Earth Observation Payload & Edge Inference Cache", tier="state", state_type="persistent", latency_ms=30, description="Multispectral sensor telemetry buffer and real-time edge compression"),
+            Node(id="adcs_attitude_actuator", label="Attitude Determination & Control System (ADCS)", tier="presentation", state_type="stateless", latency_ms=8, description="Reaction wheel spin control and magnetorquer torque coils")
+        ]
+        edges = [
+            Edge(source="ground_phased_array", target="ephemeris_orbit_engine", protocol="ka-band-rf", label="Telemetry & Ephemeris Uplink"),
+            Edge(source="ephemeris_orbit_engine", target="fso_laser_crosslink", protocol="sync-rpc", label="ISL Pointing Vectors"),
+            Edge(source="fso_laser_crosslink", target="tmr_flight_computer", protocol="optical-laser", label="Intersatellite Data Packet", async_flow=True),
+            Edge(source="earth_obs_payload", target="tmr_flight_computer", protocol="space-wire", label="Raw Instrument Frames"),
+            Edge(source="tmr_flight_computer", target="adcs_attitude_actuator", protocol="can-aerospace", label="ADCS Torque Commands"),
+            Edge(source="tmr_flight_computer", target="ground_phased_array", protocol="ka-band-rf", label="Direct Downlink Projections", async_flow=True)
+        ]
+        invariants = [
+            Invariant(statement="Free-Space Optical laser pointing vector error must remain below 4 microradians under thruster jitter", category="performance", severity="critical"),
+            Invariant(statement="Radiation-induced Single-Event Upsets (SEU) must trigger majority voting within 1 flight computer cycle", category="fault-tolerance", severity="critical"),
+            Invariant(statement="Doppler frequency shift exceeding +/- 50 kHz must be compensated prior to baseband demodulation", category="consistency", severity="critical")
+        ]
+        probes = [
+            ProbeFork(
+                dimension="Inter-Satellite Routing Strategy",
+                question="How should packets navigate the moving constellation mesh in orbit?",
+                cognitive_tension="Autonomous Dynamic ISL Routing immediately adapts to satellite failures and link occultation, while Ground-Scheduled Deterministic Contact Plans eliminate routing header overhead.",
+                options=[
+                    ProbeOption(
+                        id="autonomous_inorbit_routing",
+                        label="Autonomous In-Orbit Dynamic Routing",
+                        description="Satellites run localized distance-vector routing over active laser crosslinks.",
+                        tradeoff="High resilience against orbital node dropouts; slight compute and memory overhead on flight computers.",
+                        added_invariants=["Routing table recalculation must converge within 250 milliseconds of link drop"]
+                    ),
+                    ProbeOption(
+                        id="ground_scheduled_contact_plan",
+                        label="Ground-Scheduled Deterministic Contact Plan",
+                        description="Pre-calculated contact schedules uploaded from ground stations; zero in-orbit routing discovery overhead.",
+                        tradeoff="Zero routing compute overhead; cannot autonomously reroute around unexpected payload anomalies.",
+                        added_invariants=["Contact plan must maintain valid backup routes for at least 3 orbital passes"]
+                    )
+                ]
+            ),
+            ProbeFork(
+                dimension="Earth Observation Data Ingestion Architecture",
+                question="How should massive sensor imagery be delivered to ground analysts?",
+                cognitive_tension="Real-Time Laser Crosslink Mesh routing downlinks data in seconds via the nearest sunlit ground station, while Store-and-Forward Opportunistic Downlink buffers petabytes locally until the satellite flies directly overhead.",
+                options=[
+                    ProbeOption(
+                        id="realtime_fso_crosslink",
+                        label="Real-Time Optical Crosslink Ingestion",
+                        description="Streams multispectral frames across satellite ring directly to active ground station.",
+                        tradeoff="Sub-minute data availability; requires uninterrupted laser pointing across multiple constellation hops.",
+                        added_invariants=["End-to-end multi-hop optical latency must remain under 120 milliseconds"]
+                    ),
+                    ProbeOption(
+                        id="store_and_forward_buffer",
+                        label="Store-and-Forward High-Density NVMe Buffer",
+                        description="Buffers raw imagery on radiation-tolerant NVMe drives and dumps at 10 Gbps during primary ground pass.",
+                        tradeoff="Tolerates inter-satellite optical link interruptions; ground access latency delayed by orbital period (45-90 min).",
+                        added_invariants=["Onboard storage buffer must prevent overflow via adaptive compression when ground pass is delayed"]
+                    )
+                ]
+            )
+        ]
+        return BlueprintState(seed=seed, title="LEO Satellite Constellation & Laser Mesh Engine", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
+
+    # -------------------------------------------------------------------------
+    # 14. BRAIN-COMPUTER INTERFACES (BCI) & NEUROTECHNOLOGY
+    # -------------------------------------------------------------------------
+    @classmethod
+    def _archetype_neurotech_bci(cls, seed: str) -> BlueprintState:
+        nodes = [
+            Node(id="electrode_matrix", label="Intracortical Microelectrode Array (1024-Ch)", tier="gateway", state_type="stateless", latency_ms=1, description="High-density platinum-iridium electrode grid measuring extracellular action potentials"),
+            Node(id="afe_artifact_filter", label="Ultra-Low-Noise AFE & Artifact Filter", tier="compute", state_type="stateless", latency_ms=2, description="Differential amplification, 300Hz-6kHz bandpass filter, and EMG/ocular artifact notch rejection"),
+            Node(id="spike_sorting_engine", label="Real-Time Neuromorphic Spike Classifier", tier="compute", state_type="in-memory", latency_ms=4, description="Waveform feature extraction and single-unit action potential clustering"),
+            Node(id="intention_decoder", label="Motor Intention Kinematic Decoder (Kalman/LSTM)", tier="compute", state_type="in-memory", latency_ms=6, description="Continuous state estimation translating cortical firing rates into multi-axis motor trajectories"),
+            Node(id="closed_loop_stimulator", label="Closed-Loop Charge-Balanced Stimulator", tier="presentation", state_type="stateless", latency_ms=3, description="Biphasic constant-current microstimulation engine for somatosensory feedback"),
+            Node(id="thermal_safety_sentinel", label="Thermal Dissipation & Charge Injection Sentinel", tier="security", state_type="stateless", latency_ms=1, description="Monitors cortical tissue temperature rise and prevents electrochemical hydrolysis")
+        ]
+        edges = [
+            Edge(source="electrode_matrix", target="afe_artifact_filter", protocol="analog-neural", label="Raw Cortical Action Potentials"),
+            Edge(source="afe_artifact_filter", target="spike_sorting_engine", protocol="lvds-stream", label="Filtered Neural Band Stream"),
+            Edge(source="spike_sorting_engine", target="intention_decoder", protocol="spi-dma", label="Sorted Action Potential Timestamps"),
+            Edge(source="intention_decoder", target="closed_loop_stimulator", protocol="sync-rpc", label="Kinematic Feedback Vector"),
+            Edge(source="intention_decoder", target="thermal_safety_sentinel", protocol="sync-rpc", label="Power Consumption Telemetry"),
+            Edge(source="thermal_safety_sentinel", target="closed_loop_stimulator", protocol="sync-rpc", label="Hardware Stim Inhibit Gate")
+        ]
+        invariants = [
+            Invariant(statement="Charge injection density must never exceed 30 microcoulombs per cm2 per phase to prevent tissue damage", category="security", severity="critical"),
+            Invariant(statement="End-to-end neural decode latency from spike detection to kinematic output must remain strictly under 15 ms", category="performance", severity="critical"),
+            Invariant(statement="Cortical tissue temperature elevation directly adjacent to implant must remain strictly under 0.8 degrees Celsius", category="fault-tolerance", severity="critical")
+        ]
+        probes = [
+            ProbeFork(
+                dimension="Neural Feature Decoding Mechanism",
+                question="Which neural signal representation should the decoder target?",
+                cognitive_tension="Single-Unit Spike Sorting isolates individual neuronal action potentials for high spatial dexterity, while Local Field Potential (LFP) spectral band power provides chronic longevity as electrode impedance degrades over years.",
+                options=[
+                    ProbeOption(
+                        id="single_unit_spike_sorting",
+                        label="Single-Unit Spike Sorting (Action Potentials)",
+                        description="Tracks individual neuron action potentials using millisecond wave clustering.",
+                        tradeoff="Highest spatial accuracy for fine motor control; sensitive to micro-motion and chronic glial scar formation.",
+                        added_invariants=["Waveform cluster centroid drift must trigger background recalibration"]
+                    ),
+                    ProbeOption(
+                        id="lfp_spectral_power",
+                        label="Local Field Potential (LFP) Multi-Band Power",
+                        description="Decodes aggregate synaptic activity across broadband gamma (30-150 Hz) and beta rhythms.",
+                        tradeoff="Immune to single-neuron unit loss over multi-year implant lifespan; slightly lower degrees of freedom.",
+                        added_invariants=["LFP power normalization baseline must adapt to diurnal circadian rhythm shifts"]
+                    )
+                ]
+            ),
+            ProbeFork(
+                dimension="Compute & Telemetry Partitioning",
+                question="Where should the computational decoding pipeline execute?",
+                cognitive_tension="Implant-Side ASIC Decoding minimizes wireless radio transmission power to microwatts, while Raw Telemetric Streaming to an external wearable processor enables continuous deep neural network model retraining.",
+                options=[
+                    ProbeOption(
+                        id="implantside_asic_decoder",
+                        label="Implant-Side Ultra-Low-Power ASIC Decoder",
+                        description="Fixed-point neural decoder implemented directly on custom subcutaneous silicon.",
+                        tradeoff="Drastically reduces wireless radio transmission power and tissue heating; decoder models are static.",
+                        added_invariants=["Subcutaneous ASIC total active power consumption must remain below 15 milliwatts"]
+                    ),
+                    ProbeOption(
+                        id="external_wearable_telemetry",
+                        label="External Wearable Telemetry & Deep Decoder",
+                        description="Streams digitized broadband telemetry over near-field RF link to wearable GPU companion.",
+                        tradeoff="Enables complex transformer-based kinematic decoding models; wireless RF link increases battery consumption.",
+                        added_invariants=["Wireless packet loss must trigger immediate kinematic hold and safe torque clamp"]
+                    )
+                ]
+            )
+        ]
+        return BlueprintState(seed=seed, title="Ultra-Low-Latency Intracortical BCI & Neuromorphic Engine", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
+
+    # -------------------------------------------------------------------------
+    # 15. HARSH WEATHER, ACOUSTIC TRIANGULATION & EXTREME ACTUATION
+    # -------------------------------------------------------------------------
+    @classmethod
+    def _archetype_harsh_acoustic(cls, seed: str) -> BlueprintState:
+        nodes = [
+            Node(id="acoustic_beamforming_array", label="Phased Acoustic Beamforming Transducer Array", tier="gateway", state_type="stateless", latency_ms=4, description="Multichannel piezoelectric array capturing directional acoustic audio signatures"),
+            Node(id="storm_hardened_airframe", label="Aerodynamic Storm-Hardened Airframe & Enclosure", tier="presentation", state_type="stateless", latency_ms=10, description="IP68 hermetic sealed chassis with vortex generators and carbon-fiber leading edges"),
+            Node(id="tdoa_triangulator", label="Time-Difference-of-Arrival (TDOA) Spatial Acoustic Engine", tier="compute", state_type="in-memory", latency_ms=8, description="Sub-millisecond cross-correlation and sound source localization in high turbulence"),
+            Node(id="turbulence_inertial_nav", label="Turbulence-Compensated Inertial Navigation Unit", tier="compute", state_type="in-memory", latency_ms=3, description="9-DoF IMU with multi-axis Pitot-static tube and dynamic crosswind vector estimation"),
+            Node(id="brushless_torque_actuator", label="High-Torque Brushless Propulsion & Winch Core", tier="presentation", state_type="stateless", latency_ms=2, description="Vectoring multi-rotor brushless motors and sealed payload delivery winch"),
+            Node(id="structural_resonance_sentinel", label="Structural Resonance & Gale-Force Cutoff Sentinel", tier="security", state_type="stateless", latency_ms=1, description="Aeroelastic flutter monitor and emergency motor torque overload interlock")
+        ]
+        edges = [
+            Edge(source="acoustic_beamforming_array", target="tdoa_triangulator", protocol="piezo-analog", label="Raw Multi-Channel Audio Stream"),
+            Edge(source="tdoa_triangulator", target="turbulence_inertial_nav", protocol="can-bus", label="Target Acoustic Bearing Vector"),
+            Edge(source="turbulence_inertial_nav", target="brushless_torque_actuator", protocol="pwm-telemetry", label="Turbulence Corrective Commands", async_flow=True),
+            Edge(source="storm_hardened_airframe", target="structural_resonance_sentinel", protocol="sync-rpc", label="Strain Gauge & Barometric Telemetry"),
+            Edge(source="structural_resonance_sentinel", target="brushless_torque_actuator", protocol="can-bus", label="Emergency Power Trim Override"),
+            Edge(source="brushless_torque_actuator", target="storm_hardened_airframe", protocol="ethernet-rugged", label="Actuator Dynamic Trim Feedback")
+        ]
+        invariants = [
+            Invariant(statement="Acoustic signal-to-noise ratio must exceed 14 dB using adaptive notch filtering against gale wind noise", category="performance", severity="critical"),
+            Invariant(statement="Attitude pitch and roll corrective control loop must execute at >= 500 Hz to prevent vortex shedding stall", category="fault-tolerance", severity="critical"),
+            Invariant(statement="Hermetic payload bay ingress seal must maintain IP68 pressure differential during category-5 wind gusts", category="security", severity="critical")
+        ]
+        probes = [
+            ProbeFork(
+                dimension="Acoustic Localization Paradigm",
+                question="How should target beacons be detected amidst torrential acoustic noise?",
+                cognitive_tension="Passive TDOA Beamforming emits zero acoustic signature and conserves power, while Active Ultrasonic Frequency-Modulated Continuous Wave (FMCW) Echoing penetrates extreme background noise.",
+                options=[
+                    ProbeOption(
+                        id="passive_tdoa_crosscorr",
+                        label="Passive TDOA Cross-Correlation",
+                        description="Listens for target acoustic emissions; runs real-time Generalized Cross-Correlation (GCC-PHAT).",
+                        tradeoff="Zero acoustic signature and minimal power draw; vulnerable to continuous broad-spectrum rain clutter.",
+                        added_invariants=["Adaptive spectral subtraction filter must track dynamic gale noise floor"]
+                    ),
+                    ProbeOption(
+                        id="active_fmcw_ultrasonic",
+                        label="Active FMCW Ultrasonic Echoing",
+                        description="Transmits chirped ultrasonic pulses and detects Doppler-shifted reflections.",
+                        tradeoff="Unmatched penetration through gale winds and rain walls; higher transducer power consumption.",
+                        added_invariants=["Pulse repetition interval must adapt to prevent multipath self-interference"]
+                    )
+                ]
+            ),
+            ProbeFork(
+                dimension="Harsh Flight Attitude Control",
+                question="How should the flight control system react to sudden extreme wind shear?",
+                cognitive_tension="Active High-Frequency Motor Compensation counteracts microbursts with immediate torque surges, while Passive Aero-Elastic Trim Gliding deflects airframe surfaces to ride vortex currents.",
+                options=[
+                    ProbeOption(
+                        id="active_motor_torque_compensation",
+                        label="Active High-Frequency Motor Torque Surge",
+                        description="Drives brushless motor electronic speed controllers with instantaneous current spikes up to 40A.",
+                        tradeoff="Maintains millimeter hover precision in violent shear; reduces mission battery flight endurance.",
+                        added_invariants=["Motor temperature must be monitored to prevent thermal demagnetization"]
+                    ),
+                    ProbeOption(
+                        id="passive_aeroelastic_damping",
+                        label="Passive Aero-Elastic Morphing Trim",
+                        description="Utilizes flexible carbon trailing edges that passively twist under aerodynamic loading to shed lift.",
+                        tradeoff="Extends battery life by 35% during storm flight; larger displacement drift in hover position.",
+                        added_invariants=["Airframe elasticity fatigue limits must be inspected after every storm deployment"]
+                    )
+                ]
+            )
+        ]
+        return BlueprintState(seed=seed, title="Severe-Weather Acoustic Triangulation & Harsh Actuation System", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
+
+    # -------------------------------------------------------------------------
+    # 16. COVERT PHYSICAL CARRIERS, PIGEON POSTAL & SNEAKERNET
+    # -------------------------------------------------------------------------
+    @classmethod
+    def _archetype_physical_courier(cls, seed: str) -> BlueprintState:
+        nodes = [
+            Node(id="capsule_stager", label="Cryptographic Capsule Stager & Microdot Printer", tier="gateway", state_type="stateless", latency_ms=100, description="Encodes data into photographic microdots and seals physical capsules with tamper-evident dye"),
+            Node(id="avian_vector", label="Biological Avian Flight Carrier (Homing Trajectory)", tier="compute", state_type="stateless", latency_ms=1800000, description="Autonomous biological carrier leveraging magnetoreceptor navigation and solar azimuth cues"),
+            Node(id="automated_perch_trap", label="Automated Perch Trap & Dual-RFID Leg-Band Scanner", tier="gateway", state_type="stateless", latency_ms=50, description="Secure landing perch with near-field RFID tag authentication and locking gate"),
+            Node(id="airgapped_ingest_station", label="Air-Gapped Optical Microdot Scanner & Physical Ledger", tier="state", state_type="persistent", latency_ms=200, description="Galvanically isolated micro-optical scanner recording verified payloads into an immutable ledger"),
+            Node(id="tamper_zeroizer", label="Pyrophoric & Chemical Zeroization Interlock", tier="security", state_type="stateless", latency_ms=5, description="Instant physical destruction interlock triggering upon unauthorized capsule breach"),
+            Node(id="quarantine_chamber", label="Biosecurity & Electromagnetic Quarantine Airlock", tier="presentation", state_type="stateless", latency_ms=300, description="Faraday shielded airlock preventing external RF leakage and ensuring biological decontamination")
+        ]
+        edges = [
+            Edge(source="capsule_stager", target="avian_vector", protocol="biological-flight", label="Affixed Micro-Capsule Carrier"),
+            Edge(source="avian_vector", target="automated_perch_trap", protocol="rfid-nearfield", label="Leg-Band RFID Interrogation"),
+            Edge(source="automated_perch_trap", target="quarantine_chamber", protocol="isolated-serial", label="Carrier Entry Telemetry"),
+            Edge(source="quarantine_chamber", target="airgapped_ingest_station", protocol="optical-scan", label="Decrypted Microdot Extraction"),
+            Edge(source="automated_perch_trap", target="tamper_zeroizer", protocol="sync-rpc", label="Tamper Seal Continuity"),
+            Edge(source="tamper_zeroizer", target="airgapped_ingest_station", protocol="isolated-serial", label="Zeroization Invalidate Vector")
+        ]
+        invariants = [
+            Invariant(statement="Physical capsule payload weight must remain strictly below 25 grams to preserve avian flight envelope", category="performance", severity="critical"),
+            Invariant(statement="Detection of unauthorized capsule seal rupture must trigger immediate zero-trace chemical destruction", category="security", severity="critical"),
+            Invariant(statement="Ingestion station must maintain absolute galvanic and electromagnetic air-gap isolation from external networks", category="security", severity="critical")
+        ]
+        probes = [
+            ProbeFork(
+                dimension="Physical Data Storage Medium",
+                question="How should high-density data be physically mounted to the biological carrier?",
+                cognitive_tension="Optical Photographic Microdots are impervious to electromagnetic pulses and RF eavesdropping, while Hardware-Encrypted Micro-Flash allows gigabyte-scale throughput with active zeroization.",
+                options=[
+                    ProbeOption(
+                        id="optical_microdot_film",
+                        label="High-Density Optical Microdot Film",
+                        description="Chemically developed photographic film with microscopic resolution.",
+                        tradeoff="Impervious to EMP, RF detection, and magnetic flux; reading requires precision optical microscopy.",
+                        added_invariants=["Microdot film must use light-blocking opaque canisters during flight"]
+                    ),
+                    ProbeOption(
+                        id="hardware_encrypted_microflash",
+                        label="Hardware-Encrypted Micro-Flash Capsule",
+                        description="Solid-state memory in a Faraday-shielded titanium canister with active bus-zeroization.",
+                        tradeoff="High data capacity (gigabytes); requires miniature internal battery to power tamper circuits.",
+                        added_invariants=["Internal capsule battery voltage must be verified prior to carrier release"]
+                    )
+                ]
+            ),
+            ProbeFork(
+                dimension="Ingestion & Quarantine Protocol",
+                question="How should returned carriers and physical payloads be ingested into the air-gapped system?",
+                cognitive_tension="Fully Automated Robotic Perch Extraction removes human handling latency, while Manual Dual-Operator Quarantine Handshake ensures rigorous physical verification.",
+                options=[
+                    ProbeOption(
+                        id="robotic_perch_extraction",
+                        label="Autonomous Robotic Perch Extraction",
+                        description="Robotic arm releases capsule and feeds it directly into sealed optical scanner.",
+                        tradeoff="Sub-minute automated ingestion; mechanical complexity requires periodic maintenance.",
+                        added_invariants=["Robotic gripper must verify capsule integrity before unlatching leg clip"]
+                    ),
+                    ProbeOption(
+                        id="dual_operator_custody_handshake",
+                        label="Dual-Operator Physical Custody Handshake",
+                        description="Requires two authorized operators with physical keys to enter airlock and inspect capsule seals.",
+                        tradeoff="Absolute physical chain of custody; introduces human scheduling latency.",
+                        added_invariants=["Both operator cryptographic keycards must be present to open quarantine safe"]
+                    )
+                ]
+            )
+        ]
+        return BlueprintState(seed=seed, title="Covert Physical Carrier & Sneakernet Air-Gap Mesh", convergence_pct=30, nodes=nodes, edges=edges, invariants=invariants, active_probes=probes)
+
+    # -------------------------------------------------------------------------
+    # 17. DEEP SEMANTIC CONCEPT DECOMPOSER (For ANY arbitrary, odd, or custom idea)
+    # -------------------------------------------------------------------------
+    @classmethod
+    def _dynamic_compositional_synthesizer(cls, seed: str) -> BlueprintState:
+        """
+        Deep Semantic Concept Decomposer for arbitrary, odd, or unconventional seed concepts.
+        Extracts core domain nouns, classifies functional tiers, and generates high-fidelity
+        custom nodes, edges, invariants, and Socratic probes tailored directly to the user's
+        specific vocabulary rather than generic boilerplate.
+        """
+        stop_words = {
+            "the", "a", "an", "and", "or", "for", "with", "in", "into", "from", "using", "use",
+            "system", "systems", "based", "build", "create", "make", "that", "this", "some", "sort",
+            "odd", "custom", "strange", "idea", "blueprint", "platform", "app", "application", "tool",
+            "new", "all", "its", "via", "over", "under", "per", "like", "how", "what", "where",
+            "can", "could", "should", "would", "about", "such", "etc", "please", "just", "need",
+            "want", "our", "your", "their", "any", "other", "every", "type", "kinds", "kind"
+        }
+
+        raw_words = re.findall(r'\b[a-zA-Z]{3,}\b', seed)
+        clean_seed = " ".join(raw_words[:12]) if raw_words else "Custom Domain System"
+        
+        # Filter tokens
+        tokens = [w.lower() for w in raw_words if w.lower() not in stop_words]
+        # Deduplicate preserving order
+        seen = set()
+        dedup_tokens = []
+        for t in tokens:
+            if t not in seen:
+                seen.add(t)
+                dedup_tokens.append(t)
+        
+        if len(dedup_tokens) < 3:
+            dedup_tokens.extend(["adaptive", "telemetry", "state", "actuator", "sentinel"])
+        
+        t_in = dedup_tokens[0]
+        t_bus = dedup_tokens[1 % len(dedup_tokens)]
+        t_core = dedup_tokens[2 % len(dedup_tokens)]
+        t_state = dedup_tokens[3 % len(dedup_tokens)]
+        t_out = dedup_tokens[4 % len(dedup_tokens)] if len(dedup_tokens) > 4 else dedup_tokens[-1]
+        t_guard = dedup_tokens[5 % len(dedup_tokens)] if len(dedup_tokens) > 5 else dedup_tokens[0]
+
+        # Derive title
+        title_words = [t.capitalize() for t in dedup_tokens[:3]]
+        title = f"{' '.join(title_words)} Cognitive Architecture"
+
+        nodes = [
+            Node(
+                id=f"{t_in}_ingestion_gate",
+                label=f"{t_in.capitalize()} Sensory Ingestion & Inflow Gate",
+                tier="gateway",
+                state_type="stateless",
+                latency_ms=12,
+                description=f"Validates, normalizes, and captures incoming {t_in} telemetry, signals, and physical inputs"
+            ),
+            Node(
+                id=f"{t_core}_processing_core",
+                label=f"{t_core.capitalize()} Processing & Transformation Core",
+                tier="compute",
+                state_type="in-memory",
+                latency_ms=30,
+                description=f"High-throughput domain state machine executing dynamic transformations for {clean_seed}"
+            ),
+            Node(
+                id=f"{t_bus}_event_fabric",
+                label=f"{t_bus.capitalize()} Reactive Event Fabric",
+                tier="compute",
+                state_type="in-memory",
+                latency_ms=4,
+                description=f"Zero-copy event bus facilitating high-velocity asynchronous propagation of {t_bus} events"
+            ),
+            Node(
+                id=f"{t_state}_state_ledger",
+                label=f"{t_state.capitalize()} Monotonic Invariant Ledger",
+                tier="state",
+                state_type="persistent",
+                latency_ms=18,
+                description=f"Tamper-evident, durable persistence layer enforcing consistency across {t_state} records"
+            ),
+            Node(
+                id=f"{t_out}_dispatch_actuator",
+                label=f"{t_out.capitalize()} Actuation & Outbound Terminal",
+                tier="presentation",
+                state_type="stateless",
+                latency_ms=14,
+                description=f"Translates processed state into concrete {t_out} operations and real-time client projections"
+            ),
+            Node(
+                id=f"{t_guard}_safety_sentinel",
+                label=f"{t_guard.capitalize()} Operational Boundary Sentinel",
+                tier="security",
+                state_type="stateless",
+                latency_ms=5,
+                description=f"Continuous real-time gate enforcing physical and architectural safety constraints for {clean_seed}"
+            )
+        ]
+
+        edges = [
+            Edge(source=f"{t_in}_ingestion_gate", target=f"{t_core}_processing_core", protocol="sync-rpc", label=f"Validated {t_in.capitalize()} Inflow"),
+            Edge(source=f"{t_core}_processing_core", target=f"{t_state}_state_ledger", protocol="sync-rpc", label=f"{t_state.capitalize()} State Commit"),
+            Edge(source=f"{t_core}_processing_core", target=f"{t_bus}_event_fabric", protocol="event-stream", label=f"{t_bus.capitalize()} Domain Events", async_flow=True),
+            Edge(source=f"{t_bus}_event_fabric", target=f"{t_out}_dispatch_actuator", protocol="event-stream", label=f"{t_out.capitalize()} Actuation Stream", async_flow=True),
+            Edge(source=f"{t_core}_processing_core", target=f"{t_guard}_safety_sentinel", protocol="sync-rpc", label="Telemetry Boundary Audit"),
+            Edge(source=f"{t_guard}_safety_sentinel", target=f"{t_in}_ingestion_gate", protocol="sync-rpc", label="Safety Interlock Trip Loop")
+        ]
+
+        invariants = [
+            Invariant(statement=f"All {t_in} input streams must pass strict domain boundary validation prior to reaching {t_core} core", category="security", severity="critical"),
+            Invariant(statement=f"End-to-end propagation between {t_core} and {t_out} terminal must maintain bounded latency without pipeline stalls", category="performance", severity="critical"),
+            Invariant(statement=f"State mutations recorded in {t_state} ledger must remain immutable, monotonic, and audit-verifiable", category="consistency", severity="critical")
+        ]
+
+        probes = [
+            ProbeFork(
+                dimension=f"{t_in.capitalize()} vs {t_core.capitalize()} Coordination Paradigm",
+                question=f"How should concurrent {t_in} operations be scheduled across the {t_core} processing core?",
+                cognitive_tension=f"Deterministic Centralized Scheduling prevents resource contention and race conditions in {t_in}, while Asynchronous Reactive Concurrency maximizes throughput at the risk of transient out-of-order execution.",
+                options=[
+                    ProbeOption(
+                        id=f"deterministic_{t_core}_serialization",
+                        label=f"Deterministic {t_core.capitalize()} Serialized Execution",
+                        description=f"Pins {t_in} operations to an ordered, lock-free ring buffer for absolute determinism.",
+                        tradeoff="Guarantees zero concurrency bugs or state drift; introduces slight queuing latency under sudden load spikes.",
+                        added_invariants=[f"Operations in {t_core} must execute in strict chronological sequence"]
+                    ),
+                    ProbeOption(
+                        id=f"optimistic_{t_bus}_concurrency",
+                        label=f"Optimistic {t_bus.capitalize()} Event-Driven Concurrency",
+                        description=f"Distributes {t_in} operations concurrently across parallel worker threads using optimistic conflict detection.",
+                        tradeoff="Maximizes processing throughput under high volume; requires automated rollback handling on detected conflicts.",
+                        added_invariants=[f"Mutations must include monotonic version vectors for conflict detection"]
+                    )
+                ]
+            ),
+            ProbeFork(
+                dimension="Fault Containment & Degradation Boundary",
+                question=f"When the {t_out} outbound terminal is saturated or unresponsive, how should the architecture isolate upstream buffers?",
+                cognitive_tension=f"Immediate Fail-Fast Circuit Breaking halts incoming {t_in} requests to protect system integrity, while Graceful Backpressure Buffering preserves in-flight data by spilling to durable disk queues.",
+                options=[
+                    ProbeOption(
+                        id="fail_fast_circuit_isolation",
+                        label="Strict Fail-Fast Circuit Breaker",
+                        description=f"Trips instantly when {t_out} error rate exceeds 5%; drops or rejects new {t_in} requests immediately.",
+                        tradeoff="Protects core cluster stability and alerts operators instantly; callers receive explicit error states.",
+                        added_invariants=["Circuit breaker trips after 3 consecutive dispatch timeouts"]
+                    ),
+                    ProbeOption(
+                        id="durable_spillover_buffering",
+                        label="Durable Spillover Backpressure Buffer",
+                        description=f"Diverts excess {t_bus} events to a persistent disk buffer until {t_out} recovers.",
+                        tradeoff="Guarantees zero data loss during downstream outages; clients experience delayed execution latency.",
+                        added_invariants=["Disk spillover buffer must maintain FIFO ordering and persistent checksums"]
                     )
                 ]
             )

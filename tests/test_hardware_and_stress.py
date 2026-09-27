@@ -333,3 +333,212 @@ class TestFastAPIIntegration:
         export_data = export_res.json()
         assert export_data["status"] == "success"
         assert len(export_data["files"]) >= 7
+
+
+class TestMultiClickAndIdempotency:
+    """Verifies that rapid multi-clicks or duplicate requests never corrupt state or duplicate nodes/edges."""
+
+    @pytest.fixture(scope="class")
+    def client(self):
+        from fastapi.testclient import TestClient
+        from server import app
+        return TestClient(app)
+
+    def test_rapid_concurrent_probe_resolutions(self, client):
+        proj_res = client.post("/api/project", json={
+            "seed": "Autonomous multi-agent swarm with hierarchical supervisor",
+            "provider": "heuristic"
+        })
+        assert proj_res.status_code == 200
+        initial_state = proj_res.json()
+        session_id = initial_state["session_id"]
+        probe = initial_state["active_probes"][0]
+        option = probe["options"][0]
+
+        # Simulate 10 rapid concurrent clicks for the exact same probe option
+        payload = {
+            "session_id": session_id,
+            "probe_id": probe["id"],
+            "option_id": option["id"],
+            "custom_note": "Rapid concurrent test note"
+        }
+
+        def _send_resolve(_):
+            return client.post("/api/probe/resolve", json=payload)
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            responses = list(executor.map(_send_resolve, range(10)))
+
+        for r in responses:
+            assert r.status_code == 200
+            data = r.json()
+            assert isinstance(data["nodes"], list)
+            assert isinstance(data["edges"], list)
+
+        final_state = responses[-1].json()
+        
+        # Verify zero decision duplicates
+        matching_decisions = [
+            d for d in final_state["resolved_decisions"]
+            if d.get("probe_dimension") == probe["dimension"]
+        ]
+        assert len(matching_decisions) == 1
+
+        # Verify zero node ID duplicates
+        node_ids = [n["id"] for n in final_state["nodes"]]
+        assert len(node_ids) == len(set(node_ids))
+
+        # Verify zero edge (source, target) duplicates
+        edge_pairs = [(e["source"], e["target"]) for e in final_state["edges"]]
+        assert len(edge_pairs) == len(set(edge_pairs))
+
+        # Verify zero invariant duplicates
+        inv_statements = [i["statement"].strip().lower() for i in final_state["invariants"]]
+        assert len(inv_statements) == len(set(inv_statements))
+
+
+class TestOddPromptDecryption:
+    """Verifies that eccentric, strange, fragmented, or slang prompts are decrypted and projected."""
+
+    ECCENTRIC_IDEAS = [
+        "A potato battery satellite swarm communicating with blue lasers and harvesting space plasma",
+        "Smart sneaker shoe that glows green when dog barks and mines bitcoin on lightning network",
+        "Adaptive neuro-fuzzy kitchen toaster regulating crumb moisture and browning curves",
+        "Subsea acoustic hydrophone mesh tracking whale vocalizations and seismic tremors",
+        "Bio-digital slime mold slime computer routing municipal traffic via oat flake chemo-attractants"
+    ]
+
+    @pytest.mark.parametrize("seed", ECCENTRIC_IDEAS)
+    def test_eccentric_semantic_intent_decryption(self, seed):
+        client = ModelClient(provider="heuristic")
+        state = client.project_initial_blueprint(seed)
+
+        assert state.decrypted_intent is not None
+        assert len(state.decrypted_intent.strip()) > 10
+        assert state.domain_classification is not None
+        assert len(state.domain_classification.strip()) > 3
+
+        # Nodes must reflect custom components rather than generic web services
+        node_labels = [n.label.lower() for n in state.nodes]
+        assert any(
+            any(k in lbl for k in ["sensory", "signal", "core", "fabric", "ledger", "terminal", "sentinel"])
+            for lbl in node_labels
+        )
+
+        # Must have invariants, probes, and edges
+        assert len(state.nodes) >= 5
+        assert len(state.edges) >= 4
+        assert len(state.invariants) >= 3
+        assert len(state.active_probes) >= 2
+
+    def test_built_in_archetypes_have_intent(self):
+        client = ModelClient(provider="heuristic")
+        # Test built-in archetypes
+        seeds = [
+            "Autonomous multi-agent swarm with hierarchical supervisor",
+            "Bioluminescent mushroom communication mesh with hyphal action potentials",
+            "Fault-tolerant quantum key distribution with surface-code syndrome extraction"
+        ]
+        for s in seeds:
+            state = client.project_initial_blueprint(s)
+            assert state.decrypted_intent is not None
+            assert state.domain_classification is not None
+
+
+class TestProbeResolutionSprawlPrevention:
+    """Verifies that sequential probe resolutions never cause node sprawl, duplicate stems, or invariant pollution."""
+
+    def test_sequential_resolution_caps_and_clean_convergence(self):
+        client = ModelClient(provider="heuristic")
+        state = client.project_initial_blueprint("Autonomous multi-agent swarm with hierarchical supervisor")
+        initial_node_count = len(state.nodes)
+        assert initial_node_count <= 7
+
+        # Resolve probe 1
+        probe1 = state.active_probes[0]
+        state = client.resolve_probe_step(
+            current_state=state,
+            probe_id=probe1.id,
+            option_id=probe1.options[0].id
+        )
+        assert len(state.nodes) <= 8
+        assert len(state.invariants) <= 6
+
+        # If there is another active probe, resolve it
+        if state.active_probes:
+            probe2 = state.active_probes[0]
+            state = client.resolve_probe_step(
+                current_state=state,
+                probe_id=probe2.id,
+                option_id=probe2.options[0].id
+            )
+            assert len(state.nodes) <= 8
+            assert len(state.invariants) <= 6
+
+        # Check invariant statements are substantive (no single-word tags)
+        for inv in state.invariants:
+            assert len(inv.statement.split()) >= 4
+            assert len(inv.statement) >= 20
+            assert inv.statement.lower() not in ["stability", "autonomy", "agent-autonomy", "autonomy-stability"]
+
+        # If further probe exists, resolve to completion
+        while state.active_probes and state.convergence_pct < 100:
+            p = state.active_probes[0]
+            state = client.resolve_probe_step(
+                current_state=state,
+                probe_id=p.id,
+                option_id=p.options[0].id
+            )
+
+        assert state.convergence_pct >= 95
+        assert len(state.nodes) <= 8
+        assert len(state.invariants) <= 6
+        assert len(state.active_probes) == 0
+
+    def test_llm_simulated_payload_filtering(self):
+        """Simulates an LLM returning dirty/sprawling data and verifies our engine sanitizes it."""
+        client = ModelClient(provider="ollama")
+        state = client.project_initial_blueprint("Autonomous multi-agent swarm with hierarchical supervisor")
+        probe = state.active_probes[0]
+        option = probe.options[0]
+
+        # Mock LLM response with sprawling nodes, duplicate stems, and 1-word invariants
+        dirty_llm_json = {
+            "added_nodes": [
+                {"id": "swarm_stabilizer_alpha", "label": "Swarm Stabilizer", "tier": "compute", "state_type": "persistent", "latency_ms": 50, "description": "dup 1"},
+                {"id": "swarm_stabilizer_beta", "label": "Swarm Stabilizer", "tier": "compute", "state_type": "stateless", "latency_ms": 50, "description": "dup 2"},
+                {"id": "agent_autonomy_module", "label": "Agent Autonomy", "tier": "compute", "state_type": "persistent", "latency_ms": 50, "description": "dup 3"},
+                {"id": "autonomy_decision_maker", "label": "Autonomy Decision", "tier": "compute", "state_type": "persistent", "latency_ms": 50, "description": "dup 4"}
+            ],
+            "added_edges": [
+                {"source": "swarm_stabilizer_alpha", "target": "swarm_supervisor", "protocol": "sync-rpc", "label": "test", "async_flow": True}
+            ],
+            "added_invariants": [
+                "agent-autonomy",
+                "stability",
+                "autonomy-stability",
+                "Swarm state synchronization latency must remain strictly below 50ms across all cluster members"
+            ],
+            "next_probe": None
+        }
+
+        with patch.object(client, "check_health", return_value={"status": "connected", "provider": "ollama", "active_model": "llama3.2:latest", "is_local": True}):
+            with patch.object(client, "_clean_and_parse_json", return_value=dirty_llm_json):
+                with patch.object(client, "_dispatch_llm_request", return_value="dummy"):
+                    updated_state = client.resolve_probe_step(
+                        current_state=state,
+                        probe_id=probe.id,
+                        option_id=option.id
+                    )
+
+        # Verify only 1 node was allowed and duplicates were rejected
+        assert len(updated_state.nodes) <= len(state.nodes) + 1
+        assert len(updated_state.nodes) <= 8
+
+        # Verify trivial 1-word invariants were rejected
+        inv_texts = [i.statement.lower() for i in updated_state.invariants]
+        assert "agent-autonomy" not in inv_texts
+        assert "stability" not in inv_texts
+        assert "autonomy-stability" not in inv_texts
+        # The formal invariant was retained
+        assert any("swarm state synchronization" in t for t in inv_texts)

@@ -72,23 +72,24 @@ class ModelClient:
 
         # 2. Test Local LM Studio / OpenAI-compatible local server (Default port 1234)
         if self.provider in ["auto", "lmstudio"]:
-            try:
-                r = requests.get("http://localhost:1234/v1/models", timeout=1.5)
-                if r.status_code == 200:
-                    data = r.json()
-                    models = [m.get("id") for m in data.get("data", [])]
-                    active_model = self.model_name if self.model_name in models else (models[0] if models else "local-model")
-                    return {
-                        "status": "connected",
-                        "provider": "lmstudio",
-                        "endpoint": "http://localhost:1234",
-                        "available_models": models,
-                        "active_model": active_model,
-                        "latency_ms": int(r.elapsed.total_seconds() * 1000),
-                        "is_local": True
-                    }
-            except Exception:
-                pass
+            for lm_host in ["http://127.0.0.1:1234", "http://localhost:1234"]:
+                try:
+                    r = requests.get(f"{lm_host}/v1/models", timeout=1.0)
+                    if r.status_code == 200:
+                        data = r.json()
+                        models = [m.get("id") for m in data.get("data", [])]
+                        active_model = self.model_name if self.model_name in models else (models[0] if models else "local-model")
+                        return {
+                            "status": "connected",
+                            "provider": "lmstudio",
+                            "endpoint": lm_host,
+                            "available_models": models,
+                            "active_model": active_model,
+                            "latency_ms": int(r.elapsed.total_seconds() * 1000),
+                            "is_local": True
+                        }
+                except Exception:
+                    pass
 
         # 3. Optional Cloud Fallback (OpenRouter / OpenAI) - only if key configured
         cloud_key = self.api_key or os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
@@ -176,14 +177,16 @@ class ModelClient:
         if not target_probe or not target_option:
             return current_state
 
-        # Record decision
-        current_state.resolved_decisions.append({
-            "probe_dimension": target_probe.dimension,
-            "question": target_probe.question,
-            "chosen_label": target_option.label,
-            "tradeoff": target_option.tradeoff,
-            "custom_note": custom_note or ""
-        })
+        # Record decision with idempotency guard
+        already_resolved = any(d.get("probe_dimension") == target_probe.dimension for d in current_state.resolved_decisions)
+        if not already_resolved:
+            current_state.resolved_decisions.append({
+                "probe_dimension": target_probe.dimension,
+                "question": target_probe.question,
+                "chosen_label": target_option.label,
+                "tradeoff": target_option.tradeoff,
+                "custom_note": custom_note or ""
+            })
 
         # Remove answered probe
         current_state.active_probes = [p for p in current_state.active_probes if p.id != target_probe.id]
@@ -203,26 +206,45 @@ class ModelClient:
             current_state.nodes = [n for n in current_state.nodes if n.id not in target_option.removed_nodes]
             current_state.edges = [e for e in current_state.edges if e.source not in target_option.removed_nodes and e.target not in target_option.removed_nodes]
 
+        MAX_NODES = 8
+        existing_ids = {n.id for n in current_state.nodes}
         for n_data in target_option.added_nodes:
-            existing_ids = {n.id for n in current_state.nodes}
+            if len(current_state.nodes) >= MAX_NODES:
+                break
             if n_data["id"] not in existing_ids:
                 current_state.nodes.append(Node(**n_data))
+                existing_ids.add(n_data["id"])
 
+        existing_edges = {(e.source, e.target) for e in current_state.edges}
+        curr_node_ids = {n.id for n in current_state.nodes}
         for e_data in target_option.added_edges:
-            current_state.edges.append(Edge(**e_data))
+            pair = (e_data.get("source"), e_data.get("target"))
+            if pair not in existing_edges and pair[0] in curr_node_ids and pair[1] in curr_node_ids:
+                current_state.edges.append(Edge(**e_data))
+                existing_edges.add(pair)
 
+        MAX_INVARIANTS = 6
+        existing_invs = {inv.statement.strip().lower() for inv in current_state.invariants}
         for inv_text in target_option.added_invariants:
-            current_state.invariants.append(Invariant(
-                statement=inv_text,
-                category=target_probe.dimension.lower().replace(" ", "-"),
-                severity="critical"
-            ))
+            if len(current_state.invariants) >= MAX_INVARIANTS:
+                break
+            clean_inv = inv_text.strip()
+            if len(clean_inv.split()) >= 4 and len(clean_inv) >= 20 and clean_inv.lower() not in existing_invs:
+                current_state.invariants.append(Invariant(
+                    statement=clean_inv,
+                    category=target_probe.dimension.lower().replace(" ", "-"),
+                    severity="critical"
+                ))
+                existing_invs.add(clean_inv.lower())
 
-        current_state.convergence_pct = min(95, current_state.convergence_pct + 25)
+        current_state.convergence_pct = min(100, current_state.convergence_pct + 25)
         current_state.version += 1
 
-        if len(current_state.active_probes) == 0 and current_state.convergence_pct < 85:
-            current_state.active_probes = self._generate_next_level_probes(current_state)
+        if len(current_state.active_probes) == 0:
+            if current_state.convergence_pct < 85 and len(current_state.resolved_decisions) < 3:
+                current_state.active_probes = self._generate_next_level_probes(current_state)
+            else:
+                current_state.convergence_pct = 100
 
         return current_state
 
@@ -295,7 +317,7 @@ class ModelClient:
         )
 
         user_content = f"Seed concept: {seed}"
-        raw_json_str = self._dispatch_llm_request(system_prompt, user_content, health_info)
+        raw_json_str = self._dispatch_llm_request(system_prompt, user_content, health_info, timeout=8)
         if raw_json_str:
             data = self._clean_and_parse_json(raw_json_str)
             if data and "nodes" in data:
@@ -314,23 +336,17 @@ class ModelClient:
         system_prompt = (
             "You are an Advanced Architectural Evolution Engine for Gestalt. "
             "The user has resolved an architectural trade-off fork in their system graph. "
-            "Your job is to evolve and mutate the architecture based on their exact decision and custom notes: "
-            "add necessary specialized components, add communication edges, establish new invariants, "
-            "and synthesize ONE new high-entropy Socratic bifurcation probe that questions the next logical trade-off.\n"
+            "Your job is to evolve and mutate the architecture based on their exact decision and custom notes.\n"
+            "CRITICAL ARCHITECTURAL CONSTRAINTS:\n"
+            "1. STRICT NODE BUDGET: Do NOT spam or duplicate components. If existing nodes already cover this domain, do NOT add new nodes. At most add ONE specialized node only if fundamentally required, or leave added_nodes empty [].\n"
+            "2. FORMAL INVARIANTS ONLY: Invariants must be complete, rigorous declarative sentences of at least 6 words (e.g. 'Swarm consensus convergence must complete within 50ms across all worker peers'). NEVER provide 1-2 word tags like 'stability' or 'autonomy'. If no new invariant is needed, leave added_invariants empty [].\n"
+            "3. NEXT PROBE: Propose ONE new bifurcation probe ONLY if critical architectural questions remain unanswered and the system is not yet converged. If the architecture is already well defined or converged, set next_probe to null.\n"
             "Respond ONLY with valid JSON following this exact structure:\n"
             "{\n"
             "  \"added_nodes\": [{\"id\": \"string\", \"label\": \"string\", \"tier\": \"gateway|compute|state|storage|security|edge|presentation\", \"state_type\": \"stateless|in-memory|persistent|crdt\", \"latency_ms\": 10, \"description\": \"string\"}],\n"
             "  \"added_edges\": [{\"source\": \"string\", \"target\": \"string\", \"protocol\": \"string\", \"label\": \"string\", \"async_flow\": true}],\n"
-            "  \"added_invariants\": [\"string\"],\n"
-            "  \"next_probe\": {\n"
-            "    \"dimension\": \"string\",\n"
-            "    \"question\": \"string\",\n"
-            "    \"cognitive_tension\": \"string\",\n"
-            "    \"options\": [\n"
-            "      {\"id\": \"opt_1\", \"label\": \"string\", \"description\": \"string\", \"tradeoff\": \"string\", \"added_invariants\": [\"string\"]},\n"
-            "      {\"id\": \"opt_2\", \"label\": \"string\", \"description\": \"string\", \"tradeoff\": \"string\", \"added_invariants\": [\"string\"]}\n"
-            "    ]\n"
-            "  }\n"
+            "  \"added_invariants\": [\"Complete formal constraint sentence here\"],\n"
+            "  \"next_probe\": null\n"
             "}"
         )
 
@@ -345,7 +361,7 @@ class ModelClient:
             f"Evolve the graph and provide the next probe in JSON:"
         )
 
-        raw_json_str = self._dispatch_llm_request(system_prompt, user_content, health_info)
+        raw_json_str = self._dispatch_llm_request(system_prompt, user_content, health_info, timeout=6)
         if not raw_json_str:
             return None
 
@@ -353,48 +369,105 @@ class ModelClient:
         if not data:
             return None
 
-        # Apply LLM evolved nodes
+        # Apply LLM evolved nodes with strict cap (max 8 nodes) and semantic stem deduplication
+        MAX_NODES = 8
         existing_node_ids = {n.id for n in state.nodes}
+
+        def _is_redundant_node(ex_nodes, new_id, new_label):
+            cand_str = (new_id + " " + new_label).lower()
+            for ex in ex_nodes:
+                ex_str = (ex.id + " " + ex.label).lower()
+                for stem in ["stabiliz", "autonom", "verif", "coordinat", "supervis", "monitor", "detector", "buffer", "controller"]:
+                    if stem in cand_str and stem in ex_str:
+                        return True
+            return False
+
+        nodes_added = 0
         for n_raw in data.get("added_nodes", []):
+            if len(state.nodes) >= MAX_NODES or nodes_added >= 1:
+                break
             if isinstance(n_raw, dict) and "id" in n_raw:
                 clean_id = re.sub(r'[^a-zA-Z0-9_]', '_', n_raw["id"])
-                if clean_id not in existing_node_ids:
+                clean_label = str(n_raw.get("label", clean_id))
+                if clean_id not in existing_node_ids and not _is_redundant_node(state.nodes, clean_id, clean_label):
                     n_raw["id"] = clean_id
+                    n_raw["label"] = clean_label
                     state.nodes.append(Node(**n_raw))
                     existing_node_ids.add(clean_id)
+                    nodes_added += 1
 
-        # Apply LLM evolved edges
+        # Apply LLM evolved edges with deduplication
+        existing_edges = {(e.source, e.target) for e in state.edges}
+        current_node_ids = {n.id for n in state.nodes}
         for e_raw in data.get("added_edges", []):
             if isinstance(e_raw, dict) and "source" in e_raw and "target" in e_raw:
-                e_raw["source"] = re.sub(r'[^a-zA-Z0-9_]', '_', e_raw["source"])
-                e_raw["target"] = re.sub(r'[^a-zA-Z0-9_]', '_', e_raw["target"])
-                state.edges.append(Edge(**e_raw))
+                src = re.sub(r'[^a-zA-Z0-9_]', '_', e_raw["source"])
+                tgt = re.sub(r'[^a-zA-Z0-9_]', '_', e_raw["target"])
+                if src in current_node_ids and tgt in current_node_ids and (src, tgt) not in existing_edges and src != tgt:
+                    e_raw["source"] = src
+                    e_raw["target"] = tgt
+                    state.edges.append(Edge(**e_raw))
+                    existing_edges.add((src, tgt))
 
-        # Apply LLM evolved invariants
+        # Apply LLM evolved invariants with strict statement validation and cap (max 6 invariants)
+        MAX_INVARIANTS = 6
+        existing_invs = {inv.statement.strip().lower() for inv in state.invariants}
         for inv in data.get("added_invariants", []):
+            if len(state.invariants) >= MAX_INVARIANTS:
+                break
+            clean_inv = str(inv).strip().strip('"').strip("'")
+            words = clean_inv.split()
+            # Must be a formal declarative statement (min 5 words and 22 chars)
+            if len(words) < 5 or len(clean_inv) < 22:
+                continue
+            if clean_inv.lower() in existing_invs:
+                continue
             state.invariants.append(Invariant(
-                statement=str(inv),
+                statement=clean_inv,
                 category=probe.dimension.lower().replace(" ", "-"),
                 severity="critical"
             ))
+            existing_invs.add(clean_inv.lower())
 
-        # Apply next probe if present
+        state.convergence_pct = min(100, state.convergence_pct + 25)
+        state.version += 1
+
+        # Probe lifecycle: cease spawning once convergence is high or 3 decisions resolved
+        if state.convergence_pct >= 85 or len(state.resolved_decisions) >= 3:
+            if len(state.active_probes) == 0:
+                state.convergence_pct = 100
+            return state
+
+        # Apply next probe only if relevant and not already addressed
         next_p = data.get("next_probe")
         if isinstance(next_p, dict) and "dimension" in next_p and "options" in next_p:
+            dim = str(next_p.get("dimension", "")).strip()
+            resolved_dims = {str(d.get("probe_dimension", "")).lower() for d in state.resolved_decisions}
+            active_dims = {p.dimension.lower() for p in state.active_probes}
+
+            dim_lower = dim.lower()
+            is_duplicate_topic = any(
+                stem in dim_lower for stem in ["stabil", "autonom", "concurr", "circuit", "degrad"]
+                if any(stem in rd for rd in resolved_dims.union(active_dims))
+            )
+
             opts = [ProbeOption(**opt) for opt in next_p.get("options", []) if isinstance(opt, dict)]
-            if len(opts) >= 2:
+            if len(opts) >= 2 and not is_duplicate_topic and len(state.active_probes) < 2:
                 state.active_probes.append(ProbeFork(
-                    dimension=next_p.get("dimension", "Next Architectural Fork"),
+                    dimension=dim,
                     question=next_p.get("question", "How should this subsystem be optimized?"),
                     cognitive_tension=next_p.get("cognitive_tension", ""),
                     options=opts
                 ))
 
-        state.convergence_pct = min(95, state.convergence_pct + 25)
-        state.version += 1
+        if len(state.active_probes) == 0 and state.convergence_pct < 85:
+            state.active_probes = self._generate_next_level_probes(state)
+        elif len(state.active_probes) == 0 and state.convergence_pct >= 85:
+            state.convergence_pct = 100
+
         return state
 
-    def _dispatch_llm_request(self, system_prompt: str, user_content: str, health_info: Dict[str, Any]) -> Optional[str]:
+    def _dispatch_llm_request(self, system_prompt: str, user_content: str, health_info: Dict[str, Any], timeout: int = 8) -> Optional[str]:
         """Dispatches an LLM request to Ollama, LM Studio, or an OpenAI-compatible cloud endpoint."""
         provider = health_info.get("provider", "ollama")
         active_model = health_info.get("active_model", "llama3.2:latest")
@@ -409,7 +482,7 @@ class ModelClient:
                 "format": "json",
                 "options": {"temperature": 0.2}
             }
-            res = requests.post(url, json=payload, timeout=60)
+            res = requests.post(url, json=payload, timeout=timeout)
             if res.status_code == 200:
                 return res.json().get("response")
 
@@ -434,7 +507,7 @@ class ModelClient:
                 "temperature": 0.2,
                 "response_format": {"type": "json_object"}
             }
-            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            res = requests.post(url, headers=headers, json=payload, timeout=timeout)
             if res.status_code == 200:
                 return res.json()["choices"][0]["message"]["content"]
 

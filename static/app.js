@@ -17,6 +17,24 @@ let zoomLevel = 1.0;
 let panX = 0;
 let panY = 0;
 
+// Global Action Lock against Multi-Click Jitter & Race Conditions
+let isActionInFlight = false;
+
+function acquireActionLock(actionName) {
+  if (isActionInFlight) {
+    console.warn(`Action "${actionName}" discarded: another action is currently in flight.`);
+    return false;
+  }
+  isActionInFlight = true;
+  document.body.classList.add('action-in-flight');
+  return true;
+}
+
+function releaseActionLock() {
+  isActionInFlight = false;
+  document.body.classList.remove('action-in-flight');
+}
+
 // DOM Elements
 const seedInput = document.getElementById('seed-input');
 const btnProject = document.getElementById('btn-project');
@@ -317,6 +335,8 @@ function clearCanvas() {
   finopsMarkdown.innerHTML = '<p class="empty-state">Cloud run-rate & SLO contracts will render here.</p>';
   invariantsContainer.innerHTML = '<p class="empty-state">System guardrails & runtime assertions will list here.</p>';
   nodeInspector.classList.add('hidden');
+  const intentBanner = document.getElementById('intent-banner');
+  if (intentBanner) intentBanner.classList.add('hidden');
 }
 
 // --- SUBMIT CUSTOM NODE ---
@@ -546,24 +566,34 @@ async function checkEngineStatus() {
 
 // --- TOPOLOGY PROJECTION ---
 async function triggerProjection(seed) {
+  if (!acquireActionLock('triggerProjection')) return;
+
   btnProject.disabled = true;
-  btnProject.innerHTML = `<span>Synthesizing Topology...</span>`;
-  
+  btnProject.innerHTML = `<span class="btn-spinner"></span><span>Synthesizing Topology...</span>`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
   try {
     const res = await fetch('/api/project', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ seed })
+      body: JSON.stringify({ seed }),
+      signal: controller.signal
     });
-    
+
+    clearTimeout(timeoutId);
+
     if (!res.ok) throw new Error('Projection request failed');
     const state = await res.json();
     updateState(state);
     await fetchDeliverables(state.session_id);
     updateHistoryCount();
   } catch (err) {
+    console.error('Projection error:', err);
     alert('Failed to project topology: ' + err.message);
   } finally {
+    clearTimeout(timeoutId);
     btnProject.disabled = false;
     btnProject.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -571,6 +601,7 @@ async function triggerProjection(seed) {
       </svg>
       Project Mental Topology
     `;
+    releaseActionLock();
   }
 }
 
@@ -584,6 +615,23 @@ function updateState(state) {
   nodeCountEl.innerText = `${state.nodes.length} Nodes`;
   edgeCountEl.innerText = `${state.edges.length} Edges`;
   invariantCountEl.innerText = `${state.invariants.length} Invariants`;
+
+  // Update Decrypted Intent & Domain Analysis Banner
+  const intentBanner = document.getElementById('intent-banner');
+  const intentDomainBadge = document.getElementById('intent-domain-badge');
+  const intentDecryptedText = document.getElementById('intent-decrypted-text');
+
+  if (state.decrypted_intent && intentBanner) {
+    intentBanner.classList.remove('hidden');
+    if (intentDomainBadge) {
+      intentDomainBadge.innerText = state.domain_classification || 'Custom Domain Architecture';
+    }
+    if (intentDecryptedText) {
+      intentDecryptedText.innerText = state.decrypted_intent;
+    }
+  } else if (intentBanner) {
+    intentBanner.classList.add('hidden');
+  }
 
   applyLayout(state.nodes);
   initParticles(state);
@@ -614,7 +662,7 @@ function renderProbes(probes) {
 
       <div class="probe-options">
         ${p.options.map(opt => `
-          <button class="probe-option-btn" onclick="resolveProbe('${p.id}', '${opt.id}')">
+          <button class="probe-option-btn" onclick="resolveProbe(event, '${p.id}', '${opt.id}')">
             <div class="opt-title">
               <span>${escapeHtml(opt.label)}</span>
               <span style="font-size:0.75rem; color:var(--accent-blue);">Select ➔</span>
@@ -633,11 +681,33 @@ function renderProbes(probes) {
 }
 
 // --- RESOLVE PROBE STEP ---
-window.resolveProbe = async function(probeId, optionId) {
+window.resolveProbe = async function(evt, probeId, optionId) {
   if (!currentState) return;
+  if (!acquireActionLock('resolveProbe')) return;
+
+  const clickedBtn = evt ? evt.currentTarget : null;
+  const probeCard = clickedBtn ? clickedBtn.closest('.probe-card') : document.querySelector(`[data-probe-id="${probeId}"]`);
+
+  // Disable all options in this probe card immediately to prevent multi-click jitter
+  if (probeCard) {
+    const siblingBtns = probeCard.querySelectorAll('.probe-option-btn');
+    siblingBtns.forEach(btn => {
+      btn.disabled = true;
+      if (btn === clickedBtn) {
+        btn.classList.add('resolving');
+        const optTitle = btn.querySelector('.opt-title');
+        if (optTitle) {
+          optTitle.innerHTML = `<span class="btn-spinner"></span><span>Crystallizing Choice...</span><span style="font-size:0.75rem; color:var(--accent-cyan);">Resolving</span>`;
+        }
+      }
+    });
+  }
 
   const noteInput = document.getElementById(`note-${probeId}`);
   const customNote = noteInput ? noteInput.value.trim() : null;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 9000);
 
   try {
     const res = await fetch('/api/probe/resolve', {
@@ -648,8 +718,11 @@ window.resolveProbe = async function(probeId, optionId) {
         probe_id: probeId,
         option_id: optionId,
         custom_note: customNote || null
-      })
+      }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) throw new Error('Failed to resolve probe');
     const updatedState = await res.json();
@@ -657,7 +730,14 @@ window.resolveProbe = async function(probeId, optionId) {
     await fetchDeliverables(updatedState.session_id);
     updateHistoryCount();
   } catch (err) {
-    console.error(err);
+    console.error('Probe resolution error:', err);
+    // If failed or aborted, re-render probes so user is never stuck
+    if (currentState && currentState.active_probes) {
+      renderProbes(currentState.active_probes);
+    }
+  } finally {
+    clearTimeout(timeoutId);
+    releaseActionLock();
   }
 };
 
@@ -752,29 +832,57 @@ function renderActiveDevops() {
 }
 
 // Markdown formatter with table rendering
+// Markdown formatter with table rendering and list block styling
 function renderMarkdownSimple(md) {
   if (!md) return '';
-  
-  // Format tables
-  let processed = md.replace(/\|(.+)\|/gim, (match) => {
-    const cells = match.split('|').filter(c => c.trim().length > 0);
-    if (match.includes(':---')) return '';
-    const isHeader = match.includes('Component ID') || match.includes('Threat Category') || match.includes('Resource Dimension');
-    const tag = isHeader ? 'th' : 'td';
-    return '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
-  });
 
-  processed = processed
-    .replace(/^# (.*$)/gim, '<h2 style="font-size:1.1rem; color:#fff; margin-top:8px;">$1</h2>')
-    .replace(/^## (.*$)/gim, '<h3 style="font-size:0.95rem; color:var(--accent-blue); margin-top:14px;">$1</h3>')
-    .replace(/^### (.*$)/gim, '<h4 style="font-size:0.85rem; color:#fff; margin-top:10px;">$1</h4>')
-    .replace(/^> (.*$)/gim, '<blockquote style="border-left:2px solid var(--accent-emerald); padding-left:8px; color:var(--text-muted); font-size:0.75rem; margin:6px 0;">$1</blockquote>')
+  const lines = md.split('\n');
+  const out = [];
+  let inTable = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const trimmed = rawLine.trim();
+
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      if (trimmed.includes(':---')) continue;
+      const cells = trimmed.split('|').slice(1, -1).map(c => c.trim());
+      const isHeader = cells.some(c => c === 'Component ID' || c === 'Threat Category' || c === 'Resource Dimension' || c === 'Dimension');
+      const tag = isHeader ? 'th' : 'td';
+      const row = '<tr>' + cells.map(c => `<${tag}>${escapeHtml(c)}</${tag}>`).join('') + '</tr>';
+      if (!inTable) {
+        out.push('<div class="table-wrap"><table class="deliverable-table"><tbody>');
+        inTable = true;
+      }
+      out.push(row);
+    } else {
+      if (inTable) {
+        out.push('</tbody></table></div>');
+        inTable = false;
+      }
+      out.push(rawLine);
+    }
+  }
+  if (inTable) {
+    out.push('</tbody></table></div>');
+  }
+
+  let text = out.join('\n');
+
+  text = text
+    .replace(/^# (.*$)/gim, '<h2 style="font-size:1.1rem; color:#fff; margin-top:12px; margin-bottom:6px;">$1</h2>')
+    .replace(/^## (.*$)/gim, '<h3 style="font-size:0.95rem; color:var(--accent-blue); margin-top:16px; margin-bottom:8px;">$1</h3>')
+    .replace(/^### (.*$)/gim, '<h4 style="font-size:0.85rem; color:#fff; margin-top:12px; margin-bottom:6px;">$1</h4>')
+    .replace(/^> (.*$)/gim, '<blockquote style="border-left:2px solid var(--accent-emerald); padding-left:10px; color:var(--text-muted); font-size:0.75rem; margin:8px 0;">$1</blockquote>')
+    .replace(/^(\d+)\.\s+(.*$)/gim, '<div class="md-list-item"><span class="md-list-num">$1.</span> <span class="md-list-text">$2</span></div>')
+    .replace(/^-\s+(.*$)/gim, '<div class="md-list-item"><span class="md-list-bullet">•</span> <span class="md-list-text">$1</span></div>')
     .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-    .replace(/`([^`]+)`/gim, '<code style="background:var(--bg-card); padding:2px 4px; border-radius:3px; font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-cyan);">$1</code>')
-    .replace(/\n\n/gim, '<br/><br/>');
+    .replace(/`([^`]+)`/gim, '<code style="background:var(--bg-card); padding:2px 5px; border-radius:3px; font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-cyan);">$1</code>')
+    .replace(/\n\n+/g, '<div class="md-spacer"></div>')
+    .replace(/\n/g, '<br/>');
 
-  return processed;
+  return text;
 }
 
 // --- EXPORT TO LOCAL DISK ---
@@ -897,6 +1005,22 @@ function applyLayout(nodes) {
   const W = canvas.width || 800;
   const H = canvas.height || 600;
 
+  // Preserve positions of existing nodes if available
+  if (currentState && currentState.nodes) {
+    const existingCoords = {};
+    currentState.nodes.forEach(n => {
+      if (n.x !== undefined && n.y !== undefined) {
+        existingCoords[n.id] = { x: n.x, y: n.y };
+      }
+    });
+    nodes.forEach(n => {
+      if (existingCoords[n.id] && (n.x === undefined || n.x === null)) {
+        n.x = existingCoords[n.id].x;
+        n.y = existingCoords[n.id].y;
+      }
+    });
+  }
+
   const tierLevels = {
     presentation: 0.15,
     edge: 0.20,
@@ -931,7 +1055,11 @@ function applyLayout(nodes) {
 function initParticles(state) {
   particles = [];
   if (!state.edges) return;
+  const seenEdges = new Set();
   state.edges.forEach(edge => {
+    const key = `${edge.source}->${edge.target}`;
+    if (seenEdges.has(key)) return;
+    seenEdges.add(key);
     for (let i = 0; i < 3; i++) {
       particles.push({
         edge: edge,

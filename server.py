@@ -223,6 +223,13 @@ async def resolve_probe(req: ProbeResolveRequest):
         raise HTTPException(status_code=404, detail="Session not found.")
     
     current_state = sessions[safe_id]
+
+    # Server-side idempotency guard against multi-clicks
+    probe_exists = any(p.id == req.probe_id or p.dimension == req.probe_id for p in current_state.active_probes)
+    if not probe_exists:
+        # Probe already resolved by a prior in-flight click; return current state cleanly
+        return current_state.model_dump()
+
     updated_state = model_client.resolve_probe_step(
         current_state=current_state,
         probe_id=req.probe_id,

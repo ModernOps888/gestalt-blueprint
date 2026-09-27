@@ -10,71 +10,103 @@ from .topology import BlueprintState, Node, Edge, Invariant, ProbeFork, ProbeOpt
 
 class DomainKnowledge:
     @classmethod
-    def match_and_project(cls, seed: str) -> Optional[BlueprintState]:
+    def match_and_project(cls, seed: str) -> BlueprintState:
+        state = cls._route_archetype(seed)
+        if state:
+            if not getattr(state, "decrypted_intent", None) or not getattr(state, "domain_classification", None):
+                domain, intent, _ = SemanticIntentAnalyzer.analyze_intent(seed)
+                if not state.domain_classification:
+                    state.domain_classification = domain
+                if not state.decrypted_intent:
+                    state.decrypted_intent = intent
+        return state
+
+    @classmethod
+    def _has_kw(cls, text: str, keywords: List[str]) -> bool:
+        for kw in keywords:
+            if " " in kw or "-" in kw:
+                if kw in text:
+                    return True
+            else:
+                if re.search(r'\b' + re.escape(kw) + r'\b', text):
+                    return True
+        return False
+
+    @classmethod
+    def _route_archetype(cls, seed: str) -> BlueprintState:
         s = seed.lower()
 
+        # Check for eccentric, hybrid, or custom keywords that demand dynamic synthesis
+        eccentric_triggers = [
+            "potato", "battery", "dog", "bark", "barks", "shoe", "sneaker", "toaster", "browning",
+            "slime", "mold", "oat", "wearable", "collar", "glove", "appliance", "kitchen", "plasma",
+            "neutrino", "borehole", "pheromone", "glider", "thermocline", "debris", "auction"
+        ]
+        if any(cls._has_kw(s, [w]) for w in eccentric_triggers):
+            return cls._dynamic_compositional_synthesizer(seed)
+
         # 1. Bio-Digital, Synthetic Biology, Mycelium & DNA Storage
-        if any(k in s for k in ["mushroom", "mycelium", "fungal", "spore", "bioluminescent", "dna storage", "dna", "crispr", "enzyme", "cellular compute", "biological", "organoid", "bio-digital", "synthetic biology", "chloroplast"]):
+        if cls._has_kw(s, ["mushroom", "mycelium", "fungal", "spore", "bioluminescent", "dna storage", "dna", "crispr", "enzyme", "cellular compute", "biological", "organoid", "bio-digital", "synthetic biology", "chloroplast"]):
             return cls._archetype_biodigital(seed)
 
         # 2. Covert Physical Carriers, Pigeon Postal & Airgap Sneakernet
-        if any(k in s for k in ["pigeon", "avian", "carrier pigeon", "postal network", "steganograph", "covert channel", "microfilm", "sneakernet", "airgap courier", "microdot", "air-gap"]):
+        if cls._has_kw(s, ["pigeon", "avian", "carrier pigeon", "postal network", "steganograph", "covert channel", "microfilm", "sneakernet", "airgap courier", "microdot", "air-gap"]):
             return cls._archetype_physical_courier(seed)
 
         # 3. Quantum Information & Post-Quantum Cryptography
-        if any(k in s for k in ["quantum", "qubit", "qkd", "superposition", "entanglement", "post-quantum", "decoherence", "ion-trap", "cryostat"]):
+        if cls._has_kw(s, ["quantum", "qubit", "qkd", "superposition", "entanglement", "post-quantum", "decoherence", "ion-trap", "cryostat"]):
             return cls._archetype_quantum(seed)
 
         # 4. Space, Orbital & Satellite Constellations
-        if any(k in s for k in ["satellite", "constellation", "orbital", "inter-satellite", "doppler", "leo", "spacecraft", "ground station", "laser mesh", "starlink", "cubesat", "spaceborne"]):
+        if cls._has_kw(s, ["satellite", "constellation", "orbital", "inter-satellite", "doppler", "leo", "spacecraft", "ground station", "laser mesh", "starlink", "cubesat", "spaceborne"]):
             return cls._archetype_space_constellation(seed)
 
         # 5. Brain-Computer Interfaces (BCI) & Neurotechnology
-        if any(k in s for k in ["bci", "brain", "neural interface", "eeg", "ecog", "spike-sorting", "cortex", "intracortical", "neuroprosthetic", "neuromorphic"]):
+        if cls._has_kw(s, ["bci", "brain", "neural interface", "eeg", "ecog", "spike-sorting", "cortex", "intracortical", "neuroprosthetic", "neuromorphic"]):
             return cls._archetype_neurotech_bci(seed)
 
         # 6. Extreme Environment, Harsh Weather & Acoustic Triangulation
-        if any(k in s for k in ["acoustic", "hydrophone", "hurricane", "extreme weather", "harsh environment", "sonar array", "subterranean acoustic", "tornado", "wind gale", "infrasonic", "triangulation"]):
+        if cls._has_kw(s, ["acoustic", "hydrophone", "hurricane", "extreme weather", "harsh environment", "sonar array", "subterranean acoustic", "tornado", "wind gale", "infrasonic", "triangulation"]):
             return cls._archetype_harsh_acoustic(seed)
 
         # 7. AI Agents & Autonomous Swarms
-        if any(k in s for k in ["swarm", "agent", "multi-agent", "autonomous", "reasoning", "orchestrat", "rag", "bot"]):
+        if cls._has_kw(s, ["swarm", "agent", "multi-agent", "autonomous", "reasoning", "orchestrat", "rag", "bot"]):
             return cls._archetype_agent_swarm(seed)
 
         # 8. Local-First / P2P / CRDT
-        if any(k in s for k in ["p2p", "mesh", "decentral", "crdt", "local-first", "offline", "sync"]):
+        if cls._has_kw(s, ["p2p", "mesh", "decentral", "crdt", "local-first", "offline", "sync"]):
             return cls._archetype_p2p_crdt(seed)
 
         # 9. High-Frequency Trading & Low-Latency FinTech
-        if any(k in s for k in ["trad", "market", "order", "exchange", "arbitrage", "financial", "crypto", "signal", "matching"]):
+        if cls._has_kw(s, ["trade", "trading", "market", "order", "exchange", "arbitrage", "financial", "crypto", "matching"]):
             return cls._archetype_trading_engine(seed)
 
         # 10. Multiplayer Games & Physics Simulation
-        if any(k in s for k in ["game", "multiplayer", "physics", "simulation", "ecs", "tick", "world"]):
+        if cls._has_kw(s, ["game", "multiplayer", "physics", "simulation", "ecs", "world"]):
             return cls._archetype_game_server(seed)
 
         # 11. Computer Vision & Real-Time Multimodal Pipelines
-        if any(k in s for k in ["vision", "camera", "video", "rtsp", "image", "detection", "yolo", "tracking", "stream"]):
+        if cls._has_kw(s, ["vision", "camera", "video", "rtsp", "image", "detection", "yolo", "tracking"]):
             return cls._archetype_computer_vision(seed)
 
         # 12. IoT Sensors & Edge Telemetry
-        if any(k in s for k in ["iot", "sensor", "telemetry", "mqtt", "hardware", "device", "edge"]):
+        if cls._has_kw(s, ["iot", "sensor", "telemetry", "mqtt", "hardware", "device", "edge"]):
             return cls._archetype_iot_edge(seed)
 
         # 13. Cybersecurity, Zero-Trust & SIEM
-        if any(k in s for k in ["security", "zero-trust", "firewall", "siem", "threat", "ebpf", "quarantine", "audit"]):
+        if cls._has_kw(s, ["security", "zero-trust", "firewall", "siem", "threat", "ebpf", "quarantine", "audit"]):
             return cls._archetype_cybersecurity(seed)
 
         # 14. Autonomous Robotics & Drones
-        if any(k in s for k in ["robot", "drone", "lidar", "slam", "ros", "motor", "autopilot", "navigation"]):
+        if cls._has_kw(s, ["robot", "drone", "lidar", "slam", "ros", "motor", "autopilot", "navigation"]):
             return cls._archetype_robotics(seed)
 
         # 15. Developer Tools, Compilers & Code Synthesis
-        if any(k in s for k in ["compiler", "devtool", "ast", "code", "ide", "syntax", "lsp", "linter"]):
+        if cls._has_kw(s, ["compiler", "devtool", "ast", "code", "ide", "syntax", "lsp", "linter"]):
             return cls._archetype_devtools(seed)
 
         # 16. Real-Time Media & Social Streaming
-        if any(k in s for k in ["social", "feed", "webrtc", "sfu", "live", "chat", "presence", "broadcast"]):
+        if cls._has_kw(s, ["social", "feed", "webrtc", "sfu", "live", "chat", "presence", "broadcast"]):
             return cls._archetype_media_streaming(seed)
 
         # 17. Dynamic Semantic Concept Decomposer (Catches ANY arbitrary odd / custom concept)
@@ -1054,151 +1086,222 @@ class DomainKnowledge:
     def _dynamic_compositional_synthesizer(cls, seed: str) -> BlueprintState:
         """
         Deep Semantic Concept Decomposer for arbitrary, odd, or unconventional seed concepts.
-        Extracts core domain nouns, classifies functional tiers, and generates high-fidelity
-        custom nodes, edges, invariants, and Socratic probes tailored directly to the user's
-        specific vocabulary rather than generic boilerplate.
+        Delegates to SemanticIntentAnalyzer to decrypt intent, classify domains, and project
+        tailored nodes, edges, invariants, and Socratic probes.
         """
-        stop_words = {
-            "the", "a", "an", "and", "or", "for", "with", "in", "into", "from", "using", "use",
-            "system", "systems", "based", "build", "create", "make", "that", "this", "some", "sort",
-            "odd", "custom", "strange", "idea", "blueprint", "platform", "app", "application", "tool",
-            "new", "all", "its", "via", "over", "under", "per", "like", "how", "what", "where",
-            "can", "could", "should", "would", "about", "such", "etc", "please", "just", "need",
-            "want", "our", "your", "their", "any", "other", "every", "type", "kinds", "kind"
+        return SemanticIntentAnalyzer.analyze_and_project(seed)
+
+
+class SemanticIntentAnalyzer:
+    """
+    Universal Semantic Intent Decryptor & Architecture Extractor.
+    Extracts deep domain mechanics, physical constraints, sensory inflows,
+    state models, and actuation channels from ANY raw, strange, or unconventional prompt.
+    """
+    STOP_WORDS = {
+        "the", "a", "an", "and", "or", "for", "with", "in", "into", "from", "using", "use",
+        "system", "systems", "based", "build", "create", "make", "that", "this", "some", "sort",
+        "odd", "custom", "strange", "idea", "blueprint", "platform", "app", "application", "tool",
+        "new", "all", "its", "via", "over", "under", "per", "like", "how", "what", "where",
+        "can", "could", "should", "would", "about", "such", "etc", "please", "just", "need",
+        "want", "our", "your", "their", "any", "other", "every", "type", "kinds", "kind",
+        "when", "then", "also", "onto", "upon", "than", "more", "most", "very", "here", "there"
+    }
+
+    DOMAINS = [
+        (["dog", "bark", "barks", "shoe", "wearable", "collar", "glove", "paw", "clothing", "footwear"], "Acoustic Wearables & Embedded Biometrics"),
+        (["bitcoin", "lightning", "solana", "crypto", "mine", "mining", "memecoin", "sats", "wallet", "token", "blockchain"], "Decentralized Ledger & Cryptographic Settlement"),
+        (["potato", "battery", "harvesting", "solar", "piezo", "brownout", "energy", "power", "chem", "electrochemical"], "Intermittent Energy Harvesting & Low-Power Micro-Electronics"),
+        (["satellite", "swarm", "constellation", "orbital", "laser", "space", "cubesat", "leo", "doppler", "optical"], "Orbital Aerospace & Laser Optical Mesh"),
+        (["toaster", "appliance", "neuro-fuzzy", "fuzzy", "thermal", "browning", "oven", "heater", "food"], "Adaptive Cyber-Physical Appliances & Thermal Control"),
+        (["whale", "sonar", "underwater", "hydrophone", "subsea", "marine", "ocean", "acoustic", "buoyancy"], "Sub-Surface Hydro-Acoustics & Marine Telemetry"),
+        (["ambient", "synth", "music", "sound", "audio", "synthesizer", "frequency", "dsp", "dac"], "Real-Time Algorithmic DSP & Audio Synthesis"),
+        (["kafka", "redis", "grpc", "crdt", "p2p", "no cloud", "zero cloud", "airgap", "offline", "sync"], "Local-First Event Streaming & High-Availability Mesh"),
+        (["mushroom", "mycelium", "fungal", "spore", "dna", "slime", "mold", "crispr", "bio", "biological"], "Bio-Digital Mycelium & Synthetic DNA Computing"),
+        (["quantum", "qubit", "qkd", "superposition", "entanglement", "lattice", "entropy"], "Quantum Information & Post-Quantum Cryptography"),
+        (["drone", "robot", "lidar", "slam", "autonomous", "rover", "kinematic", "navigation"], "Autonomous Robotics & Kinodynamic Navigation")
+    ]
+
+    @classmethod
+    def analyze_intent(cls, seed: str) -> tuple:
+        s = seed.lower()
+        words = re.findall(r'\b[a-zA-Z]{3,}\b', s)
+        matched_domains = []
+        for keywords, label in cls.DOMAINS:
+            if any(k in s for k in keywords):
+                matched_domains.append(label)
+
+        if not matched_domains:
+            matched_domains.append("Custom Frontier Domain Architecture")
+
+        domain_classification = " + ".join(matched_domains[:2])
+
+        tokens = [w for w in words if w not in cls.STOP_WORDS]
+        if not tokens:
+            tokens = ["adaptive", "telemetry", "state", "actuator"]
+
+        sensory_words = []
+        actuation_words = []
+        storage_words = []
+        core_words = []
+
+        for w in tokens:
+            if w in ["dog", "bark", "barks", "acoustic", "sound", "mic", "camera", "sensor", "sonar", "hydrophone", "seismic", "potato", "battery", "piezo", "biometric", "receptor", "signal", "input"]:
+                sensory_words.append(w)
+            elif w in ["glows", "glow", "mine", "mining", "led", "lasers", "laser", "toast", "browning", "telegram", "actuator", "display", "screen", "speaker", "synth", "synthesizer", "output", "motor"]:
+                actuation_words.append(w)
+            elif w in ["bitcoin", "lightning", "solana", "crypto", "crdt", "ledger", "redis", "database", "wal", "storage", "memory", "state", "record"]:
+                storage_words.append(w)
+            else:
+                core_words.append(w)
+
+        in_noun = sensory_words[0] if sensory_words else tokens[0]
+        core_noun = core_words[0] if core_words else (tokens[1] if len(tokens) > 1 else "processing_core")
+        act_noun = actuation_words[0] if actuation_words else (tokens[-1] if len(tokens) > 2 else "actuator")
+        state_noun = storage_words[0] if storage_words else (tokens[2] if len(tokens) > 3 else "ledger")
+
+        decrypted_intent = (
+            f"An integrated cyber-physical system classified under {domain_classification}. "
+            f"The architecture ingests raw {in_noun.replace('_', ' ')} sensory inflow, routes signals through an "
+            f"autonomous {core_noun.replace('_', ' ')} transformation core, maintains durable state in an immutable "
+            f"{state_noun.replace('_', ' ')} ledger, and triggers deterministic {act_noun.replace('_', ' ')} actuation."
+        )
+
+        entities = {
+            "in": in_noun,
+            "core": core_noun,
+            "act": act_noun,
+            "state": state_noun,
+            "domain": domain_classification
         }
+        return domain_classification, decrypted_intent, entities
+
+    @classmethod
+    def analyze_and_project(cls, seed: str) -> BlueprintState:
+        domain_classification, decrypted_intent, entities = cls.analyze_intent(seed)
+        t_in = entities["in"]
+        t_core = entities["core"]
+        t_act = entities["act"]
+        t_state = entities["state"]
 
         raw_words = re.findall(r'\b[a-zA-Z]{3,}\b', seed)
         clean_seed = " ".join(raw_words[:12]) if raw_words else "Custom Domain System"
-        
-        # Filter tokens
-        tokens = [w.lower() for w in raw_words if w.lower() not in stop_words]
-        # Deduplicate preserving order
-        seen = set()
-        dedup_tokens = []
-        for t in tokens:
-            if t not in seen:
-                seen.add(t)
-                dedup_tokens.append(t)
-        
-        if len(dedup_tokens) < 3:
-            dedup_tokens.extend(["adaptive", "telemetry", "state", "actuator", "sentinel"])
-        
-        t_in = dedup_tokens[0]
-        t_bus = dedup_tokens[1 % len(dedup_tokens)]
-        t_core = dedup_tokens[2 % len(dedup_tokens)]
-        t_state = dedup_tokens[3 % len(dedup_tokens)]
-        t_out = dedup_tokens[4 % len(dedup_tokens)] if len(dedup_tokens) > 4 else dedup_tokens[-1]
-        t_guard = dedup_tokens[5 % len(dedup_tokens)] if len(dedup_tokens) > 5 else dedup_tokens[0]
-
-        # Derive title
-        title_words = [t.capitalize() for t in dedup_tokens[:3]]
-        title = f"{' '.join(title_words)} Cognitive Architecture"
+        title = f"{t_core.capitalize()} {t_in.capitalize()} Cognitive Topology"
 
         nodes = [
             Node(
-                id=f"{t_in}_ingestion_gate",
-                label=f"{t_in.capitalize()} Sensory Ingestion & Inflow Gate",
+                id=f"{t_in}_sensory_ingestion",
+                label=f"{t_in.capitalize()} Sensory Ingestion Surface",
+                tier="presentation",
+                state_type="stateless",
+                latency_ms=8,
+                description=f"Direct sensory and physical inflow capture for {t_in} telemetry"
+            ),
+            Node(
+                id=f"{t_in}_signal_conditioner",
+                label=f"{t_in.capitalize()} Signal Conditioning Gate",
                 tier="gateway",
                 state_type="stateless",
                 latency_ms=12,
-                description=f"Validates, normalizes, and captures incoming {t_in} telemetry, signals, and physical inputs"
+                description=f"ADC filtering, baseline drift correction, and protocol normalization"
             ),
             Node(
                 id=f"{t_core}_processing_core",
-                label=f"{t_core.capitalize()} Processing & Transformation Core",
+                label=f"{t_core.capitalize()} Domain Transformation Core",
                 tier="compute",
                 state_type="in-memory",
-                latency_ms=30,
-                description=f"High-throughput domain state machine executing dynamic transformations for {clean_seed}"
+                latency_ms=25,
+                description=f"Core computational engine and state machine tailored to {clean_seed}"
             ),
             Node(
-                id=f"{t_bus}_event_fabric",
-                label=f"{t_bus.capitalize()} Reactive Event Fabric",
+                id=f"{t_core}_reactive_fabric",
+                label=f"{t_core.capitalize()} Reactive Event Fabric",
                 tier="compute",
                 state_type="in-memory",
                 latency_ms=4,
-                description=f"Zero-copy event bus facilitating high-velocity asynchronous propagation of {t_bus} events"
+                description=f"Zero-copy event bus facilitating high-velocity asynchronous propagation"
             ),
             Node(
-                id=f"{t_state}_state_ledger",
+                id=f"{t_state}_monotonic_ledger",
                 label=f"{t_state.capitalize()} Monotonic Invariant Ledger",
                 tier="state",
                 state_type="persistent",
                 latency_ms=18,
-                description=f"Tamper-evident, durable persistence layer enforcing consistency across {t_state} records"
+                description=f"Tamper-evident, durable persistence layer enforcing consistency across {t_state}"
             ),
             Node(
-                id=f"{t_out}_dispatch_actuator",
-                label=f"{t_out.capitalize()} Actuation & Outbound Terminal",
+                id=f"{t_act}_actuation_terminal",
+                label=f"{t_act.capitalize()} Actuation & Outbound Terminal",
                 tier="presentation",
                 state_type="stateless",
-                latency_ms=14,
-                description=f"Translates processed state into concrete {t_out} operations and real-time client projections"
+                latency_ms=10,
+                description=f"Translates processed state into concrete {t_act} operations and physical output"
             ),
             Node(
-                id=f"{t_guard}_safety_sentinel",
-                label=f"{t_guard.capitalize()} Operational Boundary Sentinel",
+                id=f"{t_core}_safety_sentinel",
+                label=f"{t_core.capitalize()} Operational Boundary Sentinel",
                 tier="security",
                 state_type="stateless",
                 latency_ms=5,
-                description=f"Continuous real-time gate enforcing physical and architectural safety constraints for {clean_seed}"
+                description=f"Continuous real-time gate enforcing physical and operational safety boundaries"
             )
         ]
 
         edges = [
-            Edge(source=f"{t_in}_ingestion_gate", target=f"{t_core}_processing_core", protocol="sync-rpc", label=f"Validated {t_in.capitalize()} Inflow"),
-            Edge(source=f"{t_core}_processing_core", target=f"{t_state}_state_ledger", protocol="sync-rpc", label=f"{t_state.capitalize()} State Commit"),
-            Edge(source=f"{t_core}_processing_core", target=f"{t_bus}_event_fabric", protocol="event-stream", label=f"{t_bus.capitalize()} Domain Events", async_flow=True),
-            Edge(source=f"{t_bus}_event_fabric", target=f"{t_out}_dispatch_actuator", protocol="event-stream", label=f"{t_out.capitalize()} Actuation Stream", async_flow=True),
-            Edge(source=f"{t_core}_processing_core", target=f"{t_guard}_safety_sentinel", protocol="sync-rpc", label="Telemetry Boundary Audit"),
-            Edge(source=f"{t_guard}_safety_sentinel", target=f"{t_in}_ingestion_gate", protocol="sync-rpc", label="Safety Interlock Trip Loop")
+            Edge(source=f"{t_in}_sensory_ingestion", target=f"{t_in}_signal_conditioner", protocol="shared-mem", label="Raw Telemetry"),
+            Edge(source=f"{t_in}_signal_conditioner", target=f"{t_core}_processing_core", protocol="sync-rpc", label=f"Conditioned {t_in.capitalize()} Inflow"),
+            Edge(source=f"{t_core}_processing_core", target=f"{t_state}_monotonic_ledger", protocol="sync-rpc", label=f"{t_state.capitalize()} State Commit"),
+            Edge(source=f"{t_core}_processing_core", target=f"{t_core}_reactive_fabric", protocol="event-stream", label="State Transitions", async_flow=True),
+            Edge(source=f"{t_core}_reactive_fabric", target=f"{t_act}_actuation_terminal", protocol="event-stream", label=f"{t_act.capitalize()} Actuation Stream", async_flow=True),
+            Edge(source=f"{t_core}_processing_core", target=f"{t_core}_safety_sentinel", protocol="sync-rpc", label="Boundary Invariant Audit"),
+            Edge(source=f"{t_core}_safety_sentinel", target=f"{t_in}_signal_conditioner", protocol="sync-rpc", label="Interlock Trip Feedback")
         ]
 
         invariants = [
-            Invariant(statement=f"All {t_in} input streams must pass strict domain boundary validation prior to reaching {t_core} core", category="security", severity="critical"),
-            Invariant(statement=f"End-to-end propagation between {t_core} and {t_out} terminal must maintain bounded latency without pipeline stalls", category="performance", severity="critical"),
-            Invariant(statement=f"State mutations recorded in {t_state} ledger must remain immutable, monotonic, and audit-verifiable", category="consistency", severity="critical")
+            Invariant(statement=f"All {t_in} sensory inputs must pass boundary verification before triggering {t_core} processing", category="security", severity="critical"),
+            Invariant(statement=f"End-to-end processing between {t_in} capture and {t_act} actuation must complete within bounded ceiling", category="performance", severity="critical"),
+            Invariant(statement=f"State transitions recorded in {t_state} ledger must remain monotonic, tamper-evident, and durable", category="consistency", severity="critical")
         ]
 
         probes = [
             ProbeFork(
-                dimension=f"{t_in.capitalize()} vs {t_core.capitalize()} Coordination Paradigm",
-                question=f"How should concurrent {t_in} operations be scheduled across the {t_core} processing core?",
-                cognitive_tension=f"Deterministic Centralized Scheduling prevents resource contention and race conditions in {t_in}, while Asynchronous Reactive Concurrency maximizes throughput at the risk of transient out-of-order execution.",
+                dimension=f"{t_in.capitalize()} Sensory Inflow & Scheduling Policy",
+                question=f"How should the system schedule incoming {t_in} events across the {t_core} processing core?",
+                cognitive_tension=f"Strict Deterministic Serialization guarantees zero race conditions or state corruption, while Asynchronous Event-Driven Concurrency maximizes throughput at the risk of transient out-of-order execution.",
                 options=[
                     ProbeOption(
                         id=f"deterministic_{t_core}_serialization",
-                        label=f"Deterministic {t_core.capitalize()} Serialized Execution",
-                        description=f"Pins {t_in} operations to an ordered, lock-free ring buffer for absolute determinism.",
-                        tradeoff="Guarantees zero concurrency bugs or state drift; introduces slight queuing latency under sudden load spikes.",
-                        added_invariants=[f"Operations in {t_core} must execute in strict chronological sequence"]
+                        label=f"Deterministic {t_core.capitalize()} Serialization",
+                        description=f"Pins {t_in} events to an ordered, lock-free ring buffer for absolute determinism.",
+                        tradeoff="Guarantees absolute sequence ordering; introduces slight queuing delay under high input spikes.",
+                        added_invariants=[f"{t_core.capitalize()} operations must execute in strict chronological sequence"]
                     ),
                     ProbeOption(
-                        id=f"optimistic_{t_bus}_concurrency",
-                        label=f"Optimistic {t_bus.capitalize()} Event-Driven Concurrency",
-                        description=f"Distributes {t_in} operations concurrently across parallel worker threads using optimistic conflict detection.",
-                        tradeoff="Maximizes processing throughput under high volume; requires automated rollback handling on detected conflicts.",
+                        id=f"asynchronous_{t_core}_concurrency",
+                        label=f"Asynchronous {t_core.capitalize()} Event Concurrency",
+                        description=f"Dispatches {t_in} events concurrently across parallel worker threads using optimistic versioning.",
+                        tradeoff="Maximizes processing throughput under high volume; requires automated conflict resolution.",
                         added_invariants=[f"Mutations must include monotonic version vectors for conflict detection"]
                     )
                 ]
             ),
             ProbeFork(
-                dimension="Fault Containment & Degradation Boundary",
-                question=f"When the {t_out} outbound terminal is saturated or unresponsive, how should the architecture isolate upstream buffers?",
-                cognitive_tension=f"Immediate Fail-Fast Circuit Breaking halts incoming {t_in} requests to protect system integrity, while Graceful Backpressure Buffering preserves in-flight data by spilling to durable disk queues.",
+                dimension=f"{t_act.capitalize()} Actuation Degradation & Backpressure",
+                question=f"When the {t_act} outbound terminal experiences congestion or latency spikes, how should upstream buffers react?",
+                cognitive_tension=f"Immediate Circuit Isolation protects cluster stability by dropping or rejecting new {t_in} requests, while Persistent Spillover Buffering preserves all data at the cost of delayed actuation latency.",
                 options=[
                     ProbeOption(
                         id="fail_fast_circuit_isolation",
                         label="Strict Fail-Fast Circuit Breaker",
-                        description=f"Trips instantly when {t_out} error rate exceeds 5%; drops or rejects new {t_in} requests immediately.",
-                        tradeoff="Protects core cluster stability and alerts operators instantly; callers receive explicit error states.",
+                        description=f"Trips immediately when {t_act} error rate exceeds 5%; drops new {t_in} requests to protect the core.",
+                        tradeoff="Prevents cascading resource exhaustion; clients receive explicit error notifications.",
                         added_invariants=["Circuit breaker trips after 3 consecutive dispatch timeouts"]
                     ),
                     ProbeOption(
                         id="durable_spillover_buffering",
                         label="Durable Spillover Backpressure Buffer",
-                        description=f"Diverts excess {t_bus} events to a persistent disk buffer until {t_out} recovers.",
-                        tradeoff="Guarantees zero data loss during downstream outages; clients experience delayed execution latency.",
+                        description=f"Diverts excess events to a persistent local disk buffer until {t_act} terminal recovers.",
+                        tradeoff="Guarantees zero event loss during downstream congestion; latency increases during recovery.",
                         added_invariants=["Disk spillover buffer must maintain FIFO ordering and persistent checksums"]
                     )
                 ]
@@ -1213,5 +1316,7 @@ class DomainKnowledge:
             edges=edges,
             invariants=invariants,
             active_probes=probes,
+            decrypted_intent=decrypted_intent,
+            domain_classification=domain_classification,
             version=1
         )

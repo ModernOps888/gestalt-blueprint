@@ -22,7 +22,7 @@
       <div class="brand-text">
         <div class="title-row">
           <h1>GESTALT</h1>
-          <span class="badge prototype">COGNITIVE EXTRACTOR</span>
+          <span class="badge prototype">COGNITIVE STUDIO</span>
         </div>
         <p class="tagline">High-Bandwidth Thought-to-Topology Bridge (Zero-Prompt Extraction)</p>
       </div>
@@ -140,7 +140,11 @@
           </div>
         </div>
         <div class="canvas-actions">
-          <button id="btn-fit" class="btn-canvas" title="Reset View">Reset View</button>
+          <button id="btn-add-node" class="btn-canvas" title="Add Custom Node">+ Node</button>
+          <button id="btn-zoom-in" class="btn-canvas" title="Zoom In">+</button>
+          <button id="btn-zoom-out" class="btn-canvas" title="Zoom Out">-</button>
+          <button id="btn-fit" class="btn-canvas" title="Reset View">Reset</button>
+          <button id="btn-export-png" class="btn-canvas" title="Export Image as PNG">PNG</button>
           <button id="btn-toggle-flow" class="btn-canvas active" title="Toggle Flow Animation">Live Pulse</button>
         </div>
       </div>
@@ -148,7 +152,7 @@
       <div class="canvas-viewport" id="canvas-viewport">
         <canvas id="topology-canvas"></canvas>
         <div class="canvas-overlay-hint">
-          <span>Tip: Drag nodes to rearrange • Click any node to inspect invariants & latency</span>
+          <span>Tip: Drag nodes • Mouse-wheel to zoom • Click node to inspect details</span>
         </div>
       </div>
 
@@ -169,18 +173,22 @@
       </div>
     </section>
 
-    <!-- RIGHT COLUMN: Synthesis, ADR & Executable Code -->
+    <!-- RIGHT COLUMN: Synthesis, ADR, Code & IT Profession Deliverables -->
     <section class="panel panel-right">
       <div class="panel-header">
-        <h2>3. Synthesis & Export</h2>
-        <span class="step-tag">DELIVERABLES</span>
+        <h2>3. IT Deliverables</h2>
+        <span class="step-tag">MULTI-ROLE</span>
       </div>
 
-      <!-- Tabs -->
+      <!-- Profession Deliverable Tabs -->
       <div class="deliverable-tabs">
-        <button class="tab-btn active" data-tab="adr">Architecture Spec (ADR)</button>
-        <button class="tab-btn" data-tab="code">Runnable Code</button>
-        <button class="tab-btn" data-tab="invariants">Invariants</button>
+        <button class="tab-btn active" data-tab="adr" title="Software Architecture">Architect</button>
+        <button class="tab-btn" data-tab="code" title="Polyglot Code Scaffolding">Polyglot Dev</button>
+        <button class="tab-btn" data-tab="devops" title="DevOps & Platform Engineering">DevOps/SRE</button>
+        <button class="tab-btn" data-tab="secops" title="STRIDE Threat Model">SecOps</button>
+        <button class="tab-btn" data-tab="qa" title="QA & Chaos Tests">QA Tests</button>
+        <button class="tab-btn" data-tab="finops" title="Cost & Capacity Planning">FinOps/SLO</button>
+        <button class="tab-btn" data-tab="invariants" title="Invariants">Invariants</button>
       </div>
 
       <div class="deliverable-content">
@@ -191,13 +199,52 @@
           </div>
         </div>
 
-        <!-- Code Tab -->
+        <!-- Polyglot Code Tab -->
         <div class="tab-pane" id="pane-code">
           <div class="code-toolbar">
-            <span class="file-name" id="code-file-name">main.py (Asyncio Actor Skeleton)</span>
+            <div class="sub-tabs">
+              <button class="sub-tab-btn active" data-lang="python">Python (AsyncIO)</button>
+              <button class="sub-tab-btn" data-lang="typescript">TypeScript (Node)</button>
+              <button class="sub-tab-btn" data-lang="go">Go (Goroutines)</button>
+            </div>
             <button id="btn-copy-code" class="btn-sm">Copy Code</button>
           </div>
-          <pre class="code-block"><code id="code-content">// Python executable scaffolding will appear here...</code></pre>
+          <pre class="code-block"><code id="code-content">// Polyglot executable scaffolding will appear here...</code></pre>
+        </div>
+
+        <!-- DevOps & SRE Tab -->
+        <div class="tab-pane" id="pane-devops">
+          <div class="code-toolbar">
+            <div class="sub-tabs">
+              <button class="sub-tab-btn active" data-devops="compose">docker-compose.yml</button>
+              <button class="sub-tab-btn" data-devops="dockerfile">Dockerfile</button>
+            </div>
+            <button id="btn-copy-devops" class="btn-sm">Copy IaC</button>
+          </div>
+          <pre class="code-block"><code id="devops-content"># Docker & Orchestration IaC will appear here...</code></pre>
+        </div>
+
+        <!-- SecOps STRIDE Threat Model Tab -->
+        <div class="tab-pane" id="pane-secops">
+          <div class="markdown-preview" id="secops-markdown">
+            <p class="empty-state">STRIDE threat matrix will render here.</p>
+          </div>
+        </div>
+
+        <!-- QA Chaos Test Suite Tab -->
+        <div class="tab-pane" id="pane-qa">
+          <div class="code-toolbar">
+            <span class="file-name">test_suite.py (Pytest Asyncio & Latency Bounds)</span>
+            <button id="btn-copy-qa" class="btn-sm">Copy Test Suite</button>
+          </div>
+          <pre class="code-block"><code id="qa-content"># Pytest test cases will appear here...</code></pre>
+        </div>
+
+        <!-- FinOps & Capacity Tab -->
+        <div class="tab-pane" id="pane-finops">
+          <div class="markdown-preview" id="finops-markdown">
+            <p class="empty-state">Cloud run-rate & SLO contracts will render here.</p>
+          </div>
         </div>
 
         <!-- Invariants Tab -->
@@ -216,11 +263,56 @@
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          Export Project to Disk
+          Export All IT Deliverables to Disk
         </button>
       </div>
     </section>
   </main>
+
+  <!-- Add Custom Node Modal -->
+  <div id="add-node-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add Custom Architecture Component</h3>
+        <button id="btn-close-node-modal" class="btn-close">×</button>
+      </div>
+      <div class="modal-body">
+        <label>Component ID (Unique alphanumeric):</label>
+        <input type="text" id="new-node-id" class="form-input" placeholder="e.g. auth_sentinel">
+
+        <label style="margin-top:10px;">Display Label:</label>
+        <input type="text" id="new-node-label" class="form-input" placeholder="e.g. OAuth Token Sentinel">
+
+        <label style="margin-top:10px;">Architectural Tier:</label>
+        <select id="new-node-tier" class="form-input">
+          <option value="compute">Compute</option>
+          <option value="gateway">Gateway</option>
+          <option value="state">State</option>
+          <option value="storage">Storage</option>
+          <option value="security">Security</option>
+          <option value="presentation">Presentation / Edge</option>
+        </select>
+
+        <label style="margin-top:10px;">State Model:</label>
+        <select id="new-node-state" class="form-input">
+          <option value="stateless">Stateless</option>
+          <option value="in-memory">In-Memory</option>
+          <option value="persistent">Persistent</option>
+          <option value="crdt">CRDT Delta</option>
+          <option value="append-only">Append-Only</option>
+        </select>
+
+        <label style="margin-top:10px;">Latency Budget (ms):</label>
+        <input type="number" id="new-node-latency" class="form-input" value="15" min="1" max="5000">
+
+        <label style="margin-top:10px;">Role & Responsibilities:</label>
+        <input type="text" id="new-node-desc" class="form-input" placeholder="e.g. Verifies JWT signatures before downstream dispatch">
+      </div>
+      <div class="modal-footer">
+        <button id="btn-submit-add-node" class="btn btn-primary">Inject into Canvas</button>
+      </div>
+    </div>
+  </div>
 
   <!-- History Modal / Drawer -->
   <div id="history-modal" class="modal-backdrop hidden">

@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-MIT-f59e0b.svg)](#)
 
 > **Overcoming the Serialization Bottleneck in Human-AI Interaction.**  
-> Stop stuffing multi-dimensional mental blueprints through the 40-bit/second straw of text prompts. Extract topologies, resolve high-entropy architectural forks in 1 click, and synthesize runnable code with runtime invariant assertions.
+> Stop stuffing multi-dimensional mental blueprints through the 40-bit/second straw of text prompts. Extract topologies, resolve high-entropy architectural forks in 1 click, and synthesize runnable code, DevOps IaC, STRIDE threat models, and FinOps contracts.
 
 ---
 
@@ -46,7 +46,7 @@ THE GESTALT COGNITIVE EXTRACTION PARADIGM:
 [Socratic Bifurcation Probing: 1-Click High-Entropy Trade-Off Decision Cards]
        │
        ▼
-[Crystallized Architecture: Live ADR + Mermaid Diagrams + Runnable Python Actors]
+[Crystallized Architecture: Live ADR + Polyglot Code + DevOps IaC + STRIDE Security + QA Tests]
 ```
 
 ---
@@ -98,7 +98,22 @@ graph TD
 
 ---
 
-## 3. Key Capabilities
+## 3. Multi-Role IT Deliverables
+
+Gestalt is designed for every role across the engineering lifecycle:
+
+| IT Role | Synthesized Deliverable | Purpose |
+| :--- | :--- | :--- |
+| **Software Architect** | `ARCHITECTURE.md` + Mermaid Diagram | Full ADR log, tier stratification, latency budgets, non-negotiable invariants. |
+| **Polyglot Developer** | `main.py`, `index.ts`, `main.go` | Runnable asynchronous actors/goroutines matching topology channels. |
+| **DevOps / SRE** | `Dockerfile` + `docker-compose.yml` | Multi-container service topology, health checks, Prometheus metrics. |
+| **SecOps / CISO** | `THREAT_MODEL_STRIDE.md` | STRIDE risk analysis (Spoofing, Tampering, DoS) and mitigation matrix. |
+| **QA / Chaos Engineer** | `test_suite.py` | Pytest-asyncio suite validating latency budgets, invariants, and chaos injection. |
+| **Product Manager / FinOps**| `FINOPS_AND_SLO.md` | Cloud run-rate estimate, 99.95% SLA contracts, RTO/RPO targets. |
+
+---
+
+## 4. Key Capabilities
 
 ### 1. Zero-Prompt Topological Projection
 Enter a raw spark (*"Decentralized local-first collaborative canvas with peer-to-peer CRDT and zero cloud storage"*) or select an archetype chip. Gestalt instantly materializes:
@@ -113,22 +128,16 @@ Instead of asking you to write 10 paragraphs of edge cases, Gestalt computes the
   * **Option B**: *Optimistic Peer-Consensus (Dynamic Raft Quorum)* — Guaranteed ordering, requires 51% peer quorum.
 * **Clicking one option (1 second)** resolves the equivalent of 500 words of design choices, updates the graph in real-time, adds new sentinel nodes, and raises the **Latent Convergence Meter** (e.g. `30%` $\rightarrow$ `60%` $\rightarrow$ `90%`).
 
-### 3. Living Topology Canvas
-* **Interactive Physics Layout**: Drag and inspect components.
+### 3. Living Topology Canvas & Controls
+* **Smooth Zoom & Pan**: Use mouse wheel to zoom (0.35x to 2.5x) and drag to pan across large architectures.
+* **Custom Component Injection**: Click `+ Node` to inject custom domain modules directly into the live graph.
+* **PNG Image Export**: Click `PNG` to export high-resolution topology diagrams.
 * **Animated Particle Streams**: Directional pulses along edges show real-time information flow.
 * **Node Inspector**: Click any component to inspect state models, latency ceilings, and invariants.
 
-### 4. Executable Code & Deliverable Synthesis
-* **Architecture Decision Record (ADR)**: Generated markdown log documenting every architectural choice, context, and accepted trade-off.
-* **Mermaid System Diagram**: Clean, presentation-ready diagrams.
-* **Runnable Python Actor System**: Generates `main.py` and `invariants.py` with runtime invariant assertions:
-  ```python
-  SystemInvariants.assert_latency(self.node_id, elapsed_ms, self.latency_budget_ms)
-  ```
-
 ---
 
-## 4. Built-in Production Archetypes
+## 5. Built-in Production Archetypes
 
 Gestalt ships with a rich knowledge base of 10+ battle-tested architectural paradigms, plus a dynamic compositional synthesizer for arbitrary ideas:
 
@@ -145,7 +154,7 @@ Gestalt ships with a rich knowledge base of 10+ battle-tested architectural para
 
 ---
 
-## 5. Security Architecture & Threat Model
+## 6. Security Architecture & Threat Model
 
 Gestalt was built from the ground up with defensive engineering principles to ensure safe local execution:
 
@@ -159,7 +168,7 @@ Gestalt was built from the ground up with defensive engineering principles to en
 
 ---
 
-## 6. Quickstart Guide
+## 7. Quickstart Guide
 
 ### Prerequisites
 * Python 3.10+
@@ -182,35 +191,39 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000 --reload
 ```
 Open your browser to: **`http://127.0.0.1:8000`**
 
-### Using with Local Models (Ollama / LM Studio)
-Gestalt works out-of-the-box with its zero-latency **Autonomous Cognitive Heuristics Engine**. To use your local LLM:
-1. Run Ollama: `ollama run llama3.2` (or mistral, qwen2.5, phi3, deepseek).
-2. Gestalt automatically connects to `http://localhost:11434`.
-3. To configure custom endpoints, click the **Gear Icon** in the top navigation.
+### Exporting Full Project Scaffolding
+Click **"Export All IT Deliverables to Disk"** inside the app. It writes all files to `export/<session_id>/`:
+* Python: `main.py`, `invariants.py`, `test_suite.py`
+* TypeScript: `index.ts`
+* Go: `main.go`
+* DevOps: `Dockerfile`, `docker-compose.yml`
+* Security: `THREAT_MODEL_STRIDE.md`
+* FinOps: `FINOPS_AND_SLO.md`
+* Architecture: `ARCHITECTURE.md`
 
-### Running Exported Code
-1. Click **"Export Project to Disk"** inside the app.
-2. Navigate to the export folder and run:
-   ```bash
-   python export/<session_id>/main.py
-   ```
+Run the synthesized pipeline:
+```bash
+python export/<session_id>/main.py
+```
 
 ---
 
-## 7. API Reference
+## 8. API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/status` | Returns local LLM connectivity status, active provider, and latency. |
 | `POST` | `/api/project` | Projects a raw seed fragment into a topological blueprint and Socratic probes. |
 | `POST` | `/api/probe/resolve`| Resolves an architectural fork, updates the graph, and increases convergence. |
-| `POST` | `/api/synthesize` | Compiles the crystallized blueprint into ADR, Mermaid, and Python code. |
-| `POST` | `/api/export` | Safely writes project files to disk for local execution. |
+| `POST` | `/api/synthesize` | Compiles the crystallized blueprint into multi-role IT deliverables. |
+| `POST` | `/api/export` | Safely writes all polyglot, devops, secops, QA, and finops files to disk. |
+| `POST` | `/api/node/custom` | Injects a user-defined custom component node into the live canvas. |
+| `POST` | `/api/edge/custom` | Connects two nodes with a custom protocol edge. |
 | `GET` | `/api/sessions` | Lists all saved blueprints in history. |
 | `DELETE`| `/api/session/{id}` | Deletes a blueprint session from memory and disk. |
 
 ---
 
-## 8. License
+## 9. License
 
 MIT License. Built for the future of human-AI cognitive collaboration.

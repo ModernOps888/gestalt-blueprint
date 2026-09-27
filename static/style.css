@@ -896,3 +896,49 @@ body {
   color: #fff;
 }
 
+/* Sub-tabs for Polyglot and DevOps */
+.sub-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.sub-tab-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sub-tab-btn:hover {
+  color: var(--text-primary);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.sub-tab-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  border-color: var(--accent-blue);
+  font-weight: 600;
+}
+
+/* Threat model matrix styling */
+.markdown-preview table th {
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.markdown-preview table td strong {
+  color: #fff;
+}
+
+.markdown-preview table td code {
+  color: var(--accent-amber);
+}
+
+

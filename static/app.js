@@ -1,6 +1,6 @@
 /**
  * GESTALT // Cognitive Topology & Socratic Blueprint Extractor
- * Client Application Logic & Interactive Canvas Engine
+ * Client Application Logic, Multi-Role Deliverables & Interactive Canvas Engine
  */
 
 let currentState = null;
@@ -8,6 +8,14 @@ let selectedNode = null;
 let animationRunning = true;
 let animFrameId = null;
 let particles = [];
+let latestArtifacts = null;
+let activeLanguage = 'python';
+let activeDevopsTab = 'compose';
+
+// Canvas Zoom & Pan
+let zoomLevel = 1.0;
+let panX = 0;
+let panY = 0;
 
 // DOM Elements
 const seedInput = document.getElementById('seed-input');
@@ -42,6 +50,10 @@ const tabButtons = document.querySelectorAll('.tab-btn');
 const tabPanes = document.querySelectorAll('.tab-pane');
 const adrMarkdown = document.getElementById('adr-markdown');
 const codeContent = document.getElementById('code-content');
+const devopsContent = document.getElementById('devops-content');
+const secopsMarkdown = document.getElementById('secops-markdown');
+const qaContent = document.getElementById('qa-content');
+const finopsMarkdown = document.getElementById('finops-markdown');
 const invariantsContainer = document.getElementById('invariants-container');
 const btnExportDisk = document.getElementById('btn-export-disk');
 const btnCopyCode = document.getElementById('btn-copy-code');
@@ -57,6 +69,16 @@ const TIER_COLORS = {
   security: '#f43f5e'
 };
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
   initCanvas();
@@ -70,6 +92,8 @@ function setupEventListeners() {
   // Preset Chips
   document.querySelectorAll('.preset-chip').forEach(chip => {
     chip.addEventListener('click', () => {
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active-preset'));
+      chip.classList.add('active-preset');
       seedInput.value = chip.dataset.seed;
       triggerProjection(chip.dataset.seed);
     });
@@ -81,7 +105,7 @@ function setupEventListeners() {
     if (seed) triggerProjection(seed);
   });
 
-  // Tab Switching
+  // Main Deliverable Tab Switching
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       tabButtons.forEach(b => b.classList.remove('active'));
@@ -89,6 +113,26 @@ function setupEventListeners() {
       btn.classList.add('active');
       const targetPane = document.getElementById(`pane-${btn.dataset.tab}`);
       if (targetPane) targetPane.classList.add('active');
+    });
+  });
+
+  // Polyglot Language Sub-tabs
+  document.querySelectorAll('[data-lang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeLanguage = btn.dataset.lang;
+      renderActiveCode();
+    });
+  });
+
+  // DevOps Sub-tabs
+  document.querySelectorAll('[data-devops]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-devops]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeDevopsTab = btn.dataset.devops;
+      renderActiveDevops();
     });
   });
 
@@ -105,22 +149,66 @@ function setupEventListeners() {
     btnToggleFlow.classList.toggle('active', animationRunning);
   });
 
-  // Canvas Reset View / Layout
+  // Canvas Zoom Controls
+  document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    zoomLevel = Math.min(2.5, zoomLevel + 0.15);
+  });
+  document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    zoomLevel = Math.max(0.4, zoomLevel - 0.15);
+  });
   document.getElementById('btn-fit').addEventListener('click', () => {
+    zoomLevel = 1.0;
+    panX = 0;
+    panY = 0;
     if (currentState && currentState.nodes) {
       applyLayout(currentState.nodes);
     }
   });
 
-  // Export to disk
-  btnExportDisk.addEventListener('click', exportProject);
+  // Export Canvas as PNG
+  document.getElementById('btn-export-png').addEventListener('click', exportCanvasImage);
 
-  // Copy code
+  // Add Custom Node Modal
+  const addNodeModal = document.getElementById('add-node-modal');
+  document.getElementById('btn-add-node').addEventListener('click', () => {
+    if (!currentState) {
+      alert('Please project a blueprint first before adding custom nodes.');
+      return;
+    }
+    addNodeModal.classList.remove('hidden');
+  });
+  document.getElementById('btn-close-node-modal').addEventListener('click', () => {
+    addNodeModal.classList.add('hidden');
+  });
+  document.getElementById('btn-submit-add-node').addEventListener('click', submitCustomNode);
+
+  // Copy Buttons
   btnCopyCode.addEventListener('click', () => {
     navigator.clipboard.writeText(codeContent.innerText);
     btnCopyCode.innerText = 'Copied!';
-    setTimeout(() => { btnCopyCode.innerText = 'Copy Code'; }, 1800);
+    setTimeout(() => { btnCopyCode.innerText = 'Copy Code'; }, 1500);
   });
+
+  const btnCopyDevops = document.getElementById('btn-copy-devops');
+  if (btnCopyDevops) {
+    btnCopyDevops.addEventListener('click', () => {
+      navigator.clipboard.writeText(devopsContent.innerText);
+      btnCopyDevops.innerText = 'Copied!';
+      setTimeout(() => { btnCopyDevops.innerText = 'Copy IaC'; }, 1500);
+    });
+  }
+
+  const btnCopyQa = document.getElementById('btn-copy-qa');
+  if (btnCopyQa) {
+    btnCopyQa.addEventListener('click', () => {
+      navigator.clipboard.writeText(qaContent.innerText);
+      btnCopyQa.innerText = 'Copied!';
+      setTimeout(() => { btnCopyQa.innerText = 'Copy Test Suite'; }, 1500);
+    });
+  }
+
+  // Export to disk
+  btnExportDisk.addEventListener('click', exportProject);
 
   // Decisions Toggle
   document.getElementById('decisions-toggle').addEventListener('click', () => {
@@ -161,6 +249,10 @@ function clearCanvas() {
   currentState = null;
   selectedNode = null;
   particles = [];
+  latestArtifacts = null;
+  zoomLevel = 1.0;
+  panX = 0;
+  panY = 0;
   seedInput.value = '';
   convergenceFill.style.width = '0%';
   convergenceText.innerText = '0%';
@@ -172,9 +264,58 @@ function clearCanvas() {
   decisionsCountEl.innerText = '0';
   decisionsBody.innerHTML = '<p class="empty-text">No forks resolved yet.</p>';
   adrMarkdown.innerHTML = '<p class="empty-state">Generate a blueprint to preview the Architecture Decision Record.</p>';
-  codeContent.innerText = '// Python executable scaffolding will appear here...';
+  codeContent.innerText = '// Polyglot executable scaffolding will appear here...';
+  devopsContent.innerText = '# Docker & Orchestration IaC will appear here...';
+  secopsMarkdown.innerHTML = '<p class="empty-state">STRIDE threat matrix will render here.</p>';
+  qaContent.innerText = '# Pytest test cases will appear here...';
+  finopsMarkdown.innerHTML = '<p class="empty-state">Cloud run-rate & SLO contracts will render here.</p>';
   invariantsContainer.innerHTML = '<p class="empty-state">System guardrails & runtime assertions will list here.</p>';
   nodeInspector.classList.add('hidden');
+}
+
+// --- SUBMIT CUSTOM NODE ---
+async function submitCustomNode() {
+  if (!currentState) return;
+  const id = document.getElementById('new-node-id').value.trim();
+  const label = document.getElementById('new-node-label').value.trim();
+  const tier = document.getElementById('new-node-tier').value;
+  const state_type = document.getElementById('new-node-state').value;
+  const latency_ms = parseInt(document.getElementById('new-node-latency').value) || 20;
+  const description = document.getElementById('new-node-desc').value.trim();
+
+  if (!id || !label) {
+    alert('Please provide a valid Component ID and Label.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/node/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: currentState.session_id,
+        id, label, tier, state_type, latency_ms, description
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to add node');
+    }
+    const updatedState = await res.json();
+    document.getElementById('add-node-modal').classList.add('hidden');
+    updateState(updatedState);
+    await fetchDeliverables(updatedState.session_id);
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+// --- EXPORT CANVAS AS PNG ---
+function exportCanvasImage() {
+  const link = document.createElement('a');
+  link.download = `gestalt-${currentState ? currentState.session_id : 'topology'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
 // --- HISTORY LOGIC ---
@@ -209,8 +350,8 @@ async function openHistoryModal() {
     historyItemsList.innerHTML = items.map(s => `
       <div class="history-card">
         <div class="history-info">
-          <div class="history-title">${s.title}</div>
-          <div class="history-seed">"${s.seed}"</div>
+          <div class="history-title">${escapeHtml(s.title)}</div>
+          <div class="history-seed">"${escapeHtml(s.seed)}"</div>
           <div class="history-meta">
             <span>Convergence: ${s.convergence_pct}%</span>
             <span>•</span>
@@ -228,7 +369,7 @@ async function openHistoryModal() {
       </div>
     `).join('');
   } catch (err) {
-    historyItemsList.innerHTML = `<p class="empty-state" style="color:var(--accent-rose);">Error: ${err.message}</p>`;
+    historyItemsList.innerHTML = `<p class="empty-state" style="color:var(--accent-rose);">Error: ${escapeHtml(err.message)}</p>`;
   }
 }
 
@@ -290,6 +431,7 @@ async function triggerProjection(seed) {
     const state = await res.json();
     updateState(state);
     await fetchDeliverables(state.session_id);
+    updateHistoryCount();
   } catch (err) {
     alert('Failed to project topology: ' + err.message);
   } finally {
@@ -307,7 +449,6 @@ async function triggerProjection(seed) {
 function updateState(state) {
   currentState = state;
 
-  // Header metrics
   convergenceFill.style.width = `${state.convergence_pct}%`;
   convergenceText.innerText = `${state.convergence_pct}%`;
   blueprintTitle.innerText = state.title || 'Emergent Topology';
@@ -315,19 +456,10 @@ function updateState(state) {
   edgeCountEl.innerText = `${state.edges.length} Edges`;
   invariantCountEl.innerText = `${state.invariants.length} Invariants`;
 
-  // Apply layout coordinates to nodes
   applyLayout(state.nodes);
-
-  // Re-seed edge animation particles
   initParticles(state);
-
-  // Render Socratic Probes
   renderProbes(state.active_probes);
-
-  // Render Decisions Log
   renderDecisions(state.resolved_decisions);
-
-  // Render Invariants Tab
   renderInvariants(state.invariants);
 }
 
@@ -347,18 +479,18 @@ function renderProbes(probes) {
 
   probesContainer.innerHTML = probes.map(p => `
     <div class="probe-card" data-probe-id="${p.id}">
-      <div class="probe-dim">${p.dimension}</div>
-      <div class="probe-question">${p.question}</div>
-      <div class="probe-tension">" ${p.cognitive_tension} "</div>
+      <div class="probe-dim">${escapeHtml(p.dimension)}</div>
+      <div class="probe-question">${escapeHtml(p.question)}</div>
+      <div class="probe-tension">" ${escapeHtml(p.cognitive_tension)} "</div>
       <div class="probe-options">
         ${p.options.map(opt => `
           <button class="probe-option-btn" onclick="resolveProbe('${p.id}', '${opt.id}')">
             <div class="opt-title">
-              <span>${opt.label}</span>
+              <span>${escapeHtml(opt.label)}</span>
               <span style="font-size:0.75rem; color:var(--accent-blue);">Select ➔</span>
             </div>
-            <div class="opt-desc">${opt.description}</div>
-            <div class="opt-tradeoff">⚡ Tradeoff: ${opt.tradeoff}</div>
+            <div class="opt-desc">${escapeHtml(opt.description)}</div>
+            <div class="opt-tradeoff">⚡ Tradeoff: ${escapeHtml(opt.tradeoff)}</div>
           </button>
         `).join('')}
       </div>
@@ -385,6 +517,7 @@ window.resolveProbe = async function(probeId, optionId) {
     const updatedState = await res.json();
     updateState(updatedState);
     await fetchDeliverables(updatedState.session_id);
+    updateHistoryCount();
   } catch (err) {
     console.error(err);
   }
@@ -400,8 +533,8 @@ function renderDecisions(decisions) {
 
   decisionsBody.innerHTML = decisions.map(d => `
     <div class="decision-item">
-      <strong>${d.probe_dimension}:</strong> ${d.chosen_label}
-      <div style="font-size:0.65rem; color:var(--text-muted);">${d.tradeoff}</div>
+      <strong>${escapeHtml(d.probe_dimension)}:</strong> ${escapeHtml(d.chosen_label)}
+      <div style="font-size:0.65rem; color:var(--text-muted);">${escapeHtml(d.tradeoff)}</div>
     </div>
   `).join('');
 }
@@ -413,13 +546,13 @@ function renderInvariants(invariants) {
     return;
   }
 
-  invariantsContainer.innerHTML = invariants.map((inv, idx) => `
+  invariantsContainer.innerHTML = invariants.map((inv) => `
     <div style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:10px; border-radius:6px; margin-bottom:8px; border-left:3px solid var(--accent-rose);">
       <div style="display:flex; justify-content:space-between; font-size:0.68rem; font-family:var(--font-mono); color:var(--accent-cyan);">
-        <span>[${inv.category.toUpperCase()}]</span>
-        <span style="color:var(--accent-rose);">${inv.severity.toUpperCase()}</span>
+        <span>[${escapeHtml(inv.category.toUpperCase())}]</span>
+        <span style="color:var(--accent-rose);">${escapeHtml(inv.severity.toUpperCase())}</span>
       </div>
-      <div style="font-size:0.78rem; font-weight:600; margin-top:4px;">${inv.statement}</div>
+      <div style="font-size:0.78rem; font-weight:600; margin-top:4px;">${escapeHtml(inv.statement)}</div>
     </div>
   `).join('');
 }
@@ -435,24 +568,65 @@ async function fetchDeliverables(sessionId) {
     if (!res.ok) return;
 
     const data = await res.json();
-    const artifacts = data.artifacts;
+    latestArtifacts = data.artifacts;
 
-    // 1. ADR Markdown
-    adrMarkdown.innerHTML = renderMarkdownSimple(artifacts.adr_markdown);
+    // 1. Architect ADR
+    adrMarkdown.innerHTML = renderMarkdownSimple(latestArtifacts.adr_markdown);
 
-    // 2. Code Scaffold
-    if (artifacts.code_scaffold && artifacts.code_scaffold['main.py']) {
-      codeContent.innerText = artifacts.code_scaffold['main.py'];
-    }
+    // 2. Polyglot Code
+    renderActiveCode();
+
+    // 3. DevOps IaC
+    renderActiveDevops();
+
+    // 4. SecOps STRIDE
+    secopsMarkdown.innerHTML = renderMarkdownSimple(latestArtifacts.secops_stride);
+
+    // 5. QA Test Suite
+    qaContent.innerText = latestArtifacts.qa_tests || '# QA Tests';
+
+    // 6. FinOps & SLO
+    finopsMarkdown.innerHTML = renderMarkdownSimple(latestArtifacts.finops_slo);
+
   } catch (err) {
     console.error('Failed to fetch deliverables:', err);
   }
 }
 
-// Simple markdown formatter for ADR preview
+function renderActiveCode() {
+  if (!latestArtifacts) return;
+  if (activeLanguage === 'python') {
+    codeContent.innerText = latestArtifacts.code_scaffold?.['main.py'] || '# Python code';
+  } else if (activeLanguage === 'typescript') {
+    codeContent.innerText = latestArtifacts.typescript_scaffold?.['index.ts'] || '// TypeScript code';
+  } else if (activeLanguage === 'go') {
+    codeContent.innerText = latestArtifacts.go_scaffold?.['main.go'] || '// Go code';
+  }
+}
+
+function renderActiveDevops() {
+  if (!latestArtifacts || !latestArtifacts.devops_iac) return;
+  if (activeDevopsTab === 'compose') {
+    devopsContent.innerText = latestArtifacts.devops_iac['docker-compose.yml'] || '# Docker compose';
+  } else if (activeDevopsTab === 'dockerfile') {
+    devopsContent.innerText = latestArtifacts.devops_iac['Dockerfile'] || '# Dockerfile';
+  }
+}
+
+// Markdown formatter with table rendering
 function renderMarkdownSimple(md) {
   if (!md) return '';
-  return md
+  
+  // Format tables
+  let processed = md.replace(/\|(.+)\|/gim, (match) => {
+    const cells = match.split('|').filter(c => c.trim().length > 0);
+    if (match.includes(':---')) return '';
+    const isHeader = match.includes('Component ID') || match.includes('Threat Category') || match.includes('Resource Dimension');
+    const tag = isHeader ? 'th' : 'td';
+    return '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+  });
+
+  processed = processed
     .replace(/^# (.*$)/gim, '<h2 style="font-size:1.1rem; color:#fff; margin-top:8px;">$1</h2>')
     .replace(/^## (.*$)/gim, '<h3 style="font-size:0.95rem; color:var(--accent-blue); margin-top:14px;">$1</h3>')
     .replace(/^### (.*$)/gim, '<h4 style="font-size:0.85rem; color:#fff; margin-top:10px;">$1</h4>')
@@ -461,6 +635,8 @@ function renderMarkdownSimple(md) {
     .replace(/\*(.*?)\*/gim, '<em>$1</em>')
     .replace(/`([^`]+)`/gim, '<code style="background:var(--bg-card); padding:2px 4px; border-radius:3px; font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-cyan);">$1</code>')
     .replace(/\n\n/gim, '<br/><br/>');
+
+  return processed;
 }
 
 // --- EXPORT TO LOCAL DISK ---
@@ -471,7 +647,7 @@ async function exportProject() {
   }
 
   btnExportDisk.disabled = true;
-  btnExportDisk.innerText = 'Exporting Files to Disk...';
+  btnExportDisk.innerText = 'Exporting All Deliverables to Disk...';
 
   try {
     const res = await fetch('/api/export', {
@@ -480,7 +656,7 @@ async function exportProject() {
       body: JSON.stringify({ session_id: currentState.session_id })
     });
     const result = await res.json();
-    alert(`✓ Project Successfully Exported to Disk!\n\nPath: ${result.exported_path}\nFiles: ${result.files.join(', ')}\n\nYou can run 'python main.py' directly from that directory!`);
+    alert(`✓ Full IT Deliverables Successfully Exported!\n\nPath: ${result.exported_path}\nFiles:\n• ${result.files.join('\n• ')}\n\nIncludes Python, TypeScript, Go, Docker, STRIDE Threat Model, Pytest Suite, and FinOps SLA contracts!`);
   } catch (err) {
     alert('Export failed: ' + err.message);
   } finally {
@@ -491,49 +667,71 @@ async function exportProject() {
         <polyline points="7 10 12 15 17 10"></polyline>
         <line x1="12" y1="15" x2="12" y2="3"></line>
       </svg>
-      Export Project to Disk
+      Export All IT Deliverables to Disk
     `;
   }
 }
 
-// --- CANVAS & TOPOLOGY GRAPH ENGINE ---
+// --- CANVAS & TOPOLOGY GRAPH ENGINE (With Zoom & Pan) ---
 function initCanvas() {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // Mouse interaction
   let draggingNode = null;
   let dragOffset = { x: 0, y: 0 };
+  let isPanning = false;
+  let panStart = { x: 0, y: 0 };
+
+  // Mouse wheel zoom
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+    zoomLevel = Math.max(0.35, Math.min(2.5, zoomLevel * zoomFactor));
+  }, { passive: false });
 
   canvas.addEventListener('mousedown', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const mouseX = (e.clientX - rect.left - panX) / zoomLevel;
+    const mouseY = (e.clientY - rect.top - panY) / zoomLevel;
 
     if (!currentState || !currentState.nodes) return;
 
+    let clickedNode = null;
     for (let n of currentState.nodes) {
       const dx = mouseX - n.x;
       const dy = mouseY - n.y;
-      if (Math.sqrt(dx * dx + dy * dy) < 40) {
-        draggingNode = n;
-        dragOffset = { x: dx, y: dy };
-        selectNode(n);
+      if (Math.sqrt(dx * dx + dy * dy) < 45) {
+        clickedNode = n;
         break;
       }
+    }
+
+    if (clickedNode) {
+      draggingNode = clickedNode;
+      dragOffset = { x: mouseX - clickedNode.x, y: mouseY - clickedNode.y };
+      selectNode(clickedNode);
+    } else {
+      isPanning = true;
+      panStart = { x: e.clientX - panX, y: e.clientY - panY };
     }
   });
 
   window.addEventListener('mousemove', (e) => {
     if (draggingNode) {
       const rect = canvas.getBoundingClientRect();
-      draggingNode.x = e.clientX - rect.left - dragOffset.x;
-      draggingNode.y = e.clientY - rect.top - dragOffset.y;
+      const mouseX = (e.clientX - rect.left - panX) / zoomLevel;
+      const mouseY = (e.clientY - rect.top - panY) / zoomLevel;
+      draggingNode.x = mouseX - dragOffset.x;
+      draggingNode.y = mouseY - dragOffset.y;
+    } else if (isPanning) {
+      panX = e.clientX - panStart.x;
+      panY = e.clientY - panStart.y;
     }
   });
 
   window.addEventListener('mouseup', () => {
     draggingNode = null;
+    isPanning = false;
   });
 }
 
@@ -561,7 +759,6 @@ function applyLayout(nodes) {
   const W = canvas.width || 800;
   const H = canvas.height || 600;
 
-  // Tier vertical stratification
   const tierLevels = {
     presentation: 0.15,
     edge: 0.20,
@@ -611,7 +808,10 @@ function startCanvasLoop() {
   function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw background grid
+    ctx.save();
+    ctx.translate(panX, panY);
+    ctx.scale(zoomLevel, zoomLevel);
+
     drawGrid();
 
     if (currentState && currentState.nodes) {
@@ -656,6 +856,7 @@ function startCanvasLoop() {
       });
     }
 
+    ctx.restore();
     animFrameId = requestAnimationFrame(render);
   }
 
@@ -666,16 +867,19 @@ function drawGrid() {
   ctx.strokeStyle = 'rgba(30, 41, 59, 0.4)';
   ctx.lineWidth = 1;
   const step = 40;
-  for (let x = 0; x < canvas.width; x += step) {
+  const W = (canvas.width / zoomLevel) * 2;
+  const H = (canvas.height / zoomLevel) * 2;
+
+  for (let x = -W; x < W * 2; x += step) {
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
+    ctx.moveTo(x, -H);
+    ctx.lineTo(x, H * 2);
     ctx.stroke();
   }
-  for (let y = 0; y < canvas.height; y += step) {
+  for (let y = -H; y < H * 2; y += step) {
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
+    ctx.moveTo(-W, y);
+    ctx.lineTo(W * 2, y);
     ctx.stroke();
   }
 }
@@ -695,7 +899,6 @@ function drawEdge(src, tgt, edge) {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Edge label pill
   const midX = (src.x + tgt.x) / 2;
   const midY = (src.y + tgt.y) / 2;
   ctx.fillStyle = '#0f172a';
@@ -717,31 +920,26 @@ function drawNode(node, isSelected) {
   const y = node.y - height / 2;
   const radius = 8;
 
-  // Glow if selected
   if (isSelected) {
     ctx.shadowColor = color;
     ctx.shadowBlur = 16;
   }
 
-  // Card background
   ctx.fillStyle = '#111726';
   ctx.beginPath();
   ctx.roundRect(x, y, width, height, radius);
   ctx.fill();
 
-  // Border
   ctx.strokeStyle = isSelected ? color : '#1e293b';
   ctx.lineWidth = isSelected ? 2 : 1;
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // Tier color accent bar on top
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.roundRect(x, y, width, 4, [radius, radius, 0, 0]);
   ctx.fill();
 
-  // Tier pill
   ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
   ctx.fillRect(x + 10, y + 10, 52, 14);
   ctx.fillStyle = color;
@@ -749,7 +947,6 @@ function drawNode(node, isSelected) {
   ctx.textAlign = 'left';
   ctx.fillText(node.tier.toUpperCase(), x + 14, y + 20);
 
-  // Latency pill
   ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
   ctx.fillRect(x + width - 48, y + 10, 38, 14);
   ctx.fillStyle = '#94a3b8';
@@ -757,14 +954,12 @@ function drawNode(node, isSelected) {
   ctx.textAlign = 'right';
   ctx.fillText(`${node.latency_ms}ms`, x + width - 14, y + 20);
 
-  // Node label
   ctx.fillStyle = '#ffffff';
   ctx.font = '600 11px Plus Jakarta Sans';
   ctx.textAlign = 'left';
   const truncatedLabel = node.label.length > 20 ? node.label.slice(0, 18) + '...' : node.label;
   ctx.fillText(truncatedLabel, x + 10, y + 42);
 
-  // State model badge
   ctx.fillStyle = '#64748b';
   ctx.font = '9px Fira Code';
   ctx.fillText(`[${node.state_type}]`, x + 10, y + 54);

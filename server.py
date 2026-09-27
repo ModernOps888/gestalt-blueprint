@@ -212,9 +212,73 @@ async def synthesize_blueprint(req: SynthesizeRequest):
         "artifacts": artifacts
     }
 
+class CustomNodeRequest(BaseModel):
+    session_id: str
+    id: str = Field(..., max_length=50)
+    label: str = Field(..., max_length=80)
+    tier: str = "compute"
+    state_type: str = "stateless"
+    latency_ms: int = 20
+    description: str = Field("", max_length=300)
+
+class CustomEdgeRequest(BaseModel):
+    session_id: str
+    source: str
+    target: str
+    protocol: str = "sync-rpc"
+    label: str = Field("", max_length=60)
+    async_flow: bool = False
+
+@app.post("/api/node/custom")
+async def add_custom_node(req: CustomNodeRequest):
+    safe_id = _sanitize_session_id(req.session_id)
+    if safe_id not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    
+    state = sessions[safe_id]
+    clean_node_id = re.sub(r'[^a-zA-Z0-9_]', '_', req.id)
+    if any(n.id == clean_node_id for n in state.nodes):
+        raise HTTPException(status_code=400, detail="Node ID already exists.")
+    
+    new_node = Node(
+        id=clean_node_id,
+        label=req.label,
+        tier=req.tier,
+        state_type=req.state_type,
+        latency_ms=req.latency_ms,
+        description=req.description
+    )
+    state.nodes.append(new_node)
+    state.version += 1
+    _save_session_to_disk(state)
+    return state.model_dump()
+
+@app.post("/api/edge/custom")
+async def add_custom_edge(req: CustomEdgeRequest):
+    safe_id = _sanitize_session_id(req.session_id)
+    if safe_id not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    
+    state = sessions[safe_id]
+    node_ids = {n.id for n in state.nodes}
+    if req.source not in node_ids or req.target not in node_ids:
+        raise HTTPException(status_code=400, detail="Source or target node not found.")
+    
+    new_edge = Edge(
+        source=req.source,
+        target=req.target,
+        protocol=req.protocol,
+        label=req.label,
+        async_flow=req.async_flow
+    )
+    state.edges.append(new_edge)
+    state.version += 1
+    _save_session_to_disk(state)
+    return state.model_dump()
+
 @app.post("/api/export")
 async def export_code(req: ExportRequest):
-    """Exports generated files to disk safely confined within the export directory."""
+    """Exports generated files for all IT roles safely confined within the export directory."""
     safe_id = _sanitize_session_id(req.session_id)
     if safe_id not in sessions:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -222,32 +286,53 @@ async def export_code(req: ExportRequest):
     state = sessions[safe_id]
     artifacts = BlueprintSynthesizer.generate_all(state)
     
-    # Path Sanitization: confine export within EXPORT_DIR
     out_dir = (EXPORT_DIR / safe_id).resolve()
     if not out_dir.is_relative_to(EXPORT_DIR):
         raise HTTPException(status_code=400, detail="Path traversal in export destination forbidden.")
     
     out_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Write code files
-    code_files = artifacts.get("code_scaffold", {})
-    for filename, content in code_files.items():
-        # Ensure filenames do not contain path traversal
-        clean_filename = Path(filename).name
-        target_path = (out_dir / clean_filename).resolve()
-        if not target_path.is_relative_to(out_dir):
-            continue
-        with open(target_path, "w", encoding="utf-8") as f:
-            f.write(content)
-            
-    # Write ADR
-    with open(out_dir / "ARCHITECTURE.md", "w", encoding="utf-8") as f:
-        f.write(artifacts.get("adr_markdown", ""))
+    all_written_files = []
+
+    def _safe_write(filename: str, content: str):
+        clean_name = Path(filename).name
+        target = (out_dir / clean_name).resolve()
+        if target.is_relative_to(out_dir):
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(content)
+            all_written_files.append(clean_name)
+
+    # 1. Software Architect
+    _safe_write("ARCHITECTURE.md", artifacts.get("adr_markdown", ""))
+
+    # 2. Python Developer Scaffolding
+    for fn, c in artifacts.get("code_scaffold", {}).items():
+        _safe_write(fn, c)
+
+    # 3. TypeScript Developer Scaffolding
+    for fn, c in artifacts.get("typescript_scaffold", {}).items():
+        _safe_write(fn, c)
+
+    # 4. Go Developer Scaffolding
+    for fn, c in artifacts.get("go_scaffold", {}).items():
+        _safe_write(fn, c)
+
+    # 5. DevOps / SRE Deliverables
+    for fn, c in artifacts.get("devops_iac", {}).items():
+        _safe_write(fn, c)
+
+    # 6. SecOps / CISO Threat Model
+    _safe_write("THREAT_MODEL_STRIDE.md", artifacts.get("secops_stride", ""))
+
+    # 7. QA / Chaos Engineering
+    _safe_write("test_suite.py", artifacts.get("qa_tests", ""))
+
+    # 8. Product Manager & FinOps
+    _safe_write("FINOPS_AND_SLO.md", artifacts.get("finops_slo", ""))
 
     return {
         "status": "success",
         "exported_path": str(out_dir),
-        "files": list(code_files.keys()) + ["ARCHITECTURE.md"]
+        "files": all_written_files
     }
 
 if __name__ == "__main__":

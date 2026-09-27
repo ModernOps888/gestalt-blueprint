@@ -236,11 +236,48 @@ function setupEventListeners() {
 
   // Settings Modal
   const modal = document.getElementById('settings-modal');
-  document.getElementById('btn-settings').addEventListener('click', () => modal.classList.remove('hidden'));
-  document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.add('hidden'));
-  document.getElementById('btn-save-settings').addEventListener('click', () => {
-    modal.classList.add('hidden');
+  document.getElementById('btn-settings').addEventListener('click', () => {
+    modal.classList.remove('hidden');
     checkEngineStatus();
+  });
+  document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.add('hidden'));
+
+  const modelSelectEl = document.getElementById('setting-model-select');
+  if (modelSelectEl) {
+    modelSelectEl.addEventListener('change', () => {
+      document.getElementById('setting-model').value = modelSelectEl.value;
+    });
+  }
+
+  const btnTestConn = document.getElementById('btn-test-connection');
+  if (btnTestConn) {
+    btnTestConn.addEventListener('click', async () => {
+      btnTestConn.innerText = 'Checking...';
+      await checkEngineStatus();
+      btnTestConn.innerText = 'Checked!';
+      setTimeout(() => { btnTestConn.innerText = 'Check Status'; }, 1500);
+    });
+  }
+
+  document.getElementById('btn-save-settings').addEventListener('click', async () => {
+    const provider = document.getElementById('setting-provider').value;
+    const endpoint = document.getElementById('setting-endpoint').value;
+    const selectedModel = modelSelectEl ? modelSelectEl.value : '';
+    const customModel = document.getElementById('setting-model').value.trim();
+    const model = customModel || selectedModel || 'llama3.2:latest';
+    const apiKey = document.getElementById('setting-api-key').value;
+
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, endpoint, model, api_key: apiKey || null })
+      });
+    } catch (e) {
+      console.error('Settings save error:', e);
+    }
+    modal.classList.add('hidden');
+    await checkEngineStatus();
   });
 }
 
@@ -403,12 +440,30 @@ async function checkEngineStatus() {
   try {
     const res = await fetch('/api/status');
     const data = await res.json();
-    if (data.provider === 'ollama') {
-      engineNameEl.innerText = `Ollama (${data.active_model})`;
-    } else if (data.provider === 'lmstudio') {
-      engineNameEl.innerText = `LM Studio (${data.active_model})`;
+    const dotEl = document.querySelector('.status-dot');
+
+    if (data.status === 'connected' && data.is_local) {
+      if (dotEl) { dotEl.className = 'status-dot green'; }
+      engineNameEl.innerText = `Local LLM: ${data.active_model} (${data.latency_ms}ms)`;
+    } else if (data.status === 'connected' && !data.is_local) {
+      if (dotEl) { dotEl.className = 'status-dot blue'; }
+      engineNameEl.innerText = `Cloud LLM: ${data.active_model}`;
     } else {
-      engineNameEl.innerText = 'Built-in Cognitive Heuristics';
+      if (dotEl) { dotEl.className = 'status-dot purple'; }
+      engineNameEl.innerText = 'Cognitive Heuristics (Instant)';
+    }
+
+    // Populate model select in settings modal
+    const modelSelect = document.getElementById('setting-model-select');
+    if (modelSelect && data.available_models && data.available_models.length > 0) {
+      modelSelect.innerHTML = data.available_models.map(m =>
+        `<option value="${m}" ${m === data.active_model ? 'selected' : ''}>${m} (Local)</option>`
+      ).join('');
+    }
+
+    const customModelInput = document.getElementById('setting-model');
+    if (customModelInput && data.active_model && !customModelInput.value) {
+      customModelInput.value = data.active_model;
     }
   } catch (err) {
     engineNameEl.innerText = 'Cognitive Engine (Local Mode)';
@@ -482,6 +537,7 @@ function renderProbes(probes) {
       <div class="probe-dim">${escapeHtml(p.dimension)}</div>
       <div class="probe-question">${escapeHtml(p.question)}</div>
       <div class="probe-tension">" ${escapeHtml(p.cognitive_tension)} "</div>
+
       <div class="probe-options">
         ${p.options.map(opt => `
           <button class="probe-option-btn" onclick="resolveProbe('${p.id}', '${opt.id}')">
@@ -494,6 +550,10 @@ function renderProbes(probes) {
           </button>
         `).join('')}
       </div>
+
+      <div class="probe-note-wrap" style="margin-top: 10px;">
+        <input type="text" id="note-${p.id}" class="form-input" style="font-size: 0.75rem; padding: 6px 10px; background: rgba(15, 23, 42, 0.6);" placeholder="Optional custom note/constraint (e.g. 'must support sub-zero permafrost')...">
+      </div>
     </div>
   `).join('');
 }
@@ -502,6 +562,9 @@ function renderProbes(probes) {
 window.resolveProbe = async function(probeId, optionId) {
   if (!currentState) return;
 
+  const noteInput = document.getElementById(`note-${probeId}`);
+  const customNote = noteInput ? noteInput.value.trim() : null;
+
   try {
     const res = await fetch('/api/probe/resolve', {
       method: 'POST',
@@ -509,7 +572,8 @@ window.resolveProbe = async function(probeId, optionId) {
       body: JSON.stringify({
         session_id: currentState.session_id,
         probe_id: probeId,
-        option_id: optionId
+        option_id: optionId,
+        custom_note: customNote || null
       })
     });
 

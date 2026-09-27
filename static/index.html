@@ -70,10 +70,16 @@
     </div>
   </header>
 
-  <!-- Expanded Archetype Preset Bar -->
+  <!-- Expanded Archetype Preset Bar (Standard & Frontier Domains) -->
   <div class="preset-bar">
     <span class="preset-label">ARCHETYPES:</span>
     <button class="preset-chip active-preset" data-seed="Autonomous multi-agent swarm with hierarchical supervisor, episodic memory, and adversarial verifier">AI Swarm</button>
+    <button class="preset-chip" data-seed="Bioluminescent mushroom communication mesh with hyphal action potentials, synthetic DNA storage, and genetic kill-switch">Bio Mycelium</button>
+    <button class="preset-chip" data-seed="Fault-tolerant quantum key distribution with surface-code syndrome extraction and post-quantum ML-KEM lattice processor">Quantum QKD</button>
+    <button class="preset-chip" data-seed="Low-Earth-orbit satellite constellation with inter-satellite laser crosslink optical mesh and Keplerian Doppler compensation">Satellite Mesh</button>
+    <button class="preset-chip" data-seed="Intracortical brain-computer interface with 1024-channel microelectrode array, real-time spike sorting, and motor intention decoder">BCI Neurotech</button>
+    <button class="preset-chip" data-seed="Severe-weather acoustic triangulation with storm-hardened IP68 airframe and turbulence-compensated inertial navigation">Harsh Acoustic</button>
+    <button class="preset-chip" data-seed="Covert physical carrier postal network with steganographic microdots, avian homing vector, and automated RFID perch trap">Pigeon Postal</button>
     <button class="preset-chip" data-seed="Decentralized local-first collaborative canvas with peer-to-peer CRDT and zero cloud storage">P2P CRDT Mesh</button>
     <button class="preset-chip" data-seed="Sub-millisecond high-frequency order router with lock-free ring buffer and pre-trade risk filter">HFT Order Book</button>
     <button class="preset-chip" data-seed="Authoritative multiplayer game server with ECS world, spatial BVH grid, and lag compensation">Game ECS Server</button>
@@ -339,21 +345,32 @@
       <div class="modal-body">
         <label>Engine Mode:</label>
         <select id="setting-provider" class="form-input">
-          <option value="auto">Auto-detect Local Model (Ollama / LM Studio)</option>
-          <option value="ollama">Ollama (http://localhost:11434)</option>
-          <option value="lmstudio">LM Studio / LocalAI (http://localhost:1234)</option>
-          <option value="heuristic">Built-in Cognitive Heuristic Engine (Offline / Instant)</option>
+          <option value="auto">Auto-Detect Local LLM (Ollama / LM Studio) - Zero API Keys</option>
+          <option value="ollama">Local Ollama (http://localhost:11434)</option>
+          <option value="lmstudio">Local LM Studio / LocalAI (http://localhost:1234)</option>
+          <option value="heuristic">Built-in Cognitive Heuristics Engine (Instant / Offline)</option>
+          <option value="openrouter">Optional Cloud: OpenRouter (OpenAI-compatible)</option>
+          <option value="openai">Optional Cloud: OpenAI API</option>
         </select>
 
-        <label style="margin-top:12px;">Endpoint URL:</label>
+        <label style="margin-top:12px;">Active Local Model:</label>
+        <select id="setting-model-select" class="form-input">
+          <option value="llama3.2:latest">llama3.2:latest (Detected)</option>
+        </select>
+        <small class="helper-text">Dynamically loaded from your local Ollama / LM Studio library.</small>
+
+        <label style="margin-top:12px;">Custom Model Name (Override):</label>
+        <input type="text" id="setting-model" class="form-input" value="llama3.2:latest" placeholder="e.g. qwen2.5-coder:7b or llama3.2">
+
+        <label style="margin-top:12px;">Local Endpoint URL:</label>
         <input type="text" id="setting-endpoint" class="form-input" value="http://localhost:11434">
 
-        <label style="margin-top:12px;">Model Name:</label>
-        <input type="text" id="setting-model" class="form-input" value="llama3.2">
-        <small class="helper-text">Works with any local model: llama3, mistral, qwen2.5, phi3, deepseek, etc.</small>
+        <label style="margin-top:12px;">Optional Cloud API Key:</label>
+        <input type="password" id="setting-api-key" class="form-input" placeholder="Optional: sk-... (Leave empty for 100% Local LLM)">
+        <small class="helper-text">Local models (Ollama/LM Studio) run entirely on your hardware and require NO API key.</small>
       </div>
       <div class="modal-footer">
-        <button id="btn-test-connection" class="btn btn-secondary">Test Connection</button>
+        <button id="btn-test-connection" class="btn btn-secondary">Check Status</button>
         <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
       </div>
     </div>

@@ -82,9 +82,9 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 class ProjectRequest(BaseModel):
     seed: str = Field(..., max_length=1000)
-    provider: Optional[str] = "auto"
-    endpoint: Optional[str] = "http://localhost:11434"
-    model: Optional[str] = "llama3.2"
+    provider: Optional[str] = None
+    endpoint: Optional[str] = None
+    model: Optional[str] = None
 
     @field_validator("endpoint")
     @classmethod
@@ -124,6 +124,29 @@ async def get_index():
 async def get_model_status():
     """Checks local model connectivity."""
     return model_client.check_health()
+
+class SettingsRequest(BaseModel):
+    provider: Optional[str] = "auto"
+    endpoint: Optional[str] = "http://localhost:11434"
+    model: Optional[str] = "llama3.2:latest"
+    api_key: Optional[str] = None
+
+@app.post("/api/settings")
+async def update_settings(req: SettingsRequest):
+    """Updates engine configuration (local model, endpoint, or optional cloud key)."""
+    if req.provider:
+        model_client.provider = req.provider
+    if req.endpoint:
+        model_client.endpoint = req.endpoint.rstrip("/")
+    if req.model:
+        model_client.model_name = req.model
+    if req.api_key is not None:
+        model_client.api_key = req.api_key.strip() if req.api_key else None
+    
+    return {
+        "status": "updated",
+        "health": model_client.check_health()
+    }
 
 @app.get("/api/sessions")
 async def list_sessions():

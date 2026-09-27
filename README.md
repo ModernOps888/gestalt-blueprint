@@ -135,6 +135,12 @@ Instead of asking you to write 10 paragraphs of edge cases, Gestalt computes the
 * **Animated Particle Streams**: Directional pulses along edges show real-time information flow.
 * **Node Inspector**: Click any component to inspect state models, latency ceilings, and invariants.
 
+### 4. Dynamic Hardware Calibration & Multi-GPU Discovery
+* **Host Environment Detection**: Inspects CPU cores, system RAM, discrete GPUs, and platform runtimes across Windows, Linux, and macOS.
+* **Spec Tier Taxonomy**: Categorizes topologies into `edge_cpu`, `entry_gpu`, `mid_gpu`, `high_gpu`, and `ultra_multigpu`.
+* **Factual Model Fit Matrix**: Calculates 4-bit quantization VRAM requirements against installed local models, classifying each into 100% GPU VRAM Offload, Hybrid RAM spillover, or Exceeds Hardware Capacity.
+* **Automated GPU Reservations**: Synthesizes NVIDIA Container Toolkit device blocks and AMD ROCm `/dev/kfd` passthroughs directly into `docker-compose.yml`.
+
 ---
 
 ## 5. Built-in Production & Frontier Archetypes
@@ -159,9 +165,33 @@ Gestalt ships with a rich knowledge base of 16 battle-tested architectural parad
 16. **Ultra-Low-Latency Media SFU**: WebRTC simulcast forwarding, ephemeral presence meshes, and CDN edge segment caches.
 17. **Deep Semantic Concept Decomposer**: Parses arbitrary, eccentric, or novel phrases (e.g. clockwork steam calculators, microbial fermentation monitors) into custom domain nodes, protocol edges, realistic physical invariants, and Socratic bifurcation probes.
 
+## 6. Cross-Platform Hardware Architecture & Multi-GPU Profiler
+
+Gestalt integrates high-precision hardware discovery that probes physical and unified memory architectures to calibrate blueprint performance and generate hardware-accurate deliverables:
+
+### 1. Cross-Platform Detection Matrix
+* **Windows**: Direct `nvidia-smi` GPU query, fallback to WMI video controller topology, psutil / wmic CPU and RAM metrics.
+* **Linux**: Dual NVIDIA CUDA (`nvidia-smi`) and AMD ROCm (`rocm-smi`) detection, `/proc/cpuinfo` hardware threads, and `/proc/meminfo` physical RAM.
+* **macOS (Darwin)**: Metal unified memory allocation via `system_profiler SPDisplaysDataType` and `sysctl` machdep brand strings.
+
+### 2. Spec Tier Classification & Guidance
+| Spec Tier | Hardware Profile Boundary | Recommended Parameter Scale | Context Window Ceiling | Parallelism Strategy |
+| :--- | :--- | :--- | :--- | :--- |
+| **`ultra_multigpu`** | >= 24GB VRAM or 2+ Discrete GPUs | 32B to 70B parameters | 32,768 tokens | Tensor / Pipeline Parallel Split |
+| **`high_gpu`** | 16GB to 24GB Discrete VRAM | 14B to 32B parameters | 16,384 tokens | Single Device Offload |
+| **`mid_gpu`** | 6.5GB to 16GB Discrete VRAM (e.g. RTX 5060) | 3B to 8B parameters | 8,192 tokens | Single Device Offload |
+| **`entry_gpu`** | 3.5GB to 6.5GB Discrete VRAM | 1B to 3B parameters | 4,096 tokens | Single Device Offload |
+| **`edge_cpu`** | < 3.5GB VRAM or CPU-only | 1B to 3B parameters | 2,048 tokens | Multi-threaded CPU Quantization |
+
+### 3. Factual VRAM Model Fit Evaluator
+Gestalt calculates the exact 4-bit quantization (Q4_K_M) memory footprint and 4K context requirements for any local model:
+* **Optimal (100% VRAM Offload)**: Required memory <= available VRAM. Runs at maximum native GPU speed (140 to 220+ tokens/sec).
+* **Hybrid (System RAM Spillover)**: Required memory exceeds VRAM but fits within host RAM. Partial layer offloading with host memory paging.
+* **Exceeds Capacity**: Model memory footprint exceeds total physical resources.
+
 ---
 
-## 6. Security Architecture & Threat Model
+## 7. Security Architecture & Threat Model
 
 Gestalt was built from the ground up with defensive engineering principles to ensure safe local execution:
 
@@ -175,11 +205,11 @@ Gestalt was built from the ground up with defensive engineering principles to en
 
 ---
 
-## 7. Quickstart Guide
+## 8. Quickstart Guide
 
 ### Prerequisites
 * Python 3.10+
-* (Optional) [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai) for local LLM inference.
+* (Optional) [Ollama](https://ollama.ai) or [LM Studio](https://lmstudio.ai) for local LLM inference. Zero API keys required.
 
 ### Installation
 ```bash
@@ -188,7 +218,7 @@ git clone https://github.com/ModernOps888/gestalt-blueprint.git
 cd gestalt-blueprint
 
 # Install dependencies
-pip install fastapi uvicorn pydantic requests
+pip install fastapi uvicorn pydantic requests pytest pytest-asyncio httpx
 ```
 
 ### Running the Studio
@@ -198,14 +228,20 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000 --reload
 ```
 Open your browser to: **`http://127.0.0.1:8000`**
 
+### Running the Test & Stress Suite
+```bash
+pytest tests/test_hardware_and_stress.py -v
+```
+Executes 18 automated unit and stress tests validating live host detection, cross-platform mocking (Linux ROCm, multi-GPU rigs, macOS Metal), model fit evaluations, dynamic eccentric raw prompt projections, and high-concurrency workloads.
+
 ### Exporting Full Project Scaffolding
 Click **"Export All IT Deliverables to Disk"** inside the app. It writes all files to `export/<session_id>/`:
 * Python: `main.py`, `invariants.py`, `test_suite.py`
 * TypeScript: `index.ts`
 * Go: `main.go`
-* DevOps: `Dockerfile`, `docker-compose.yml`
+* DevOps: `Dockerfile`, `docker-compose.yml` (with GPU reservations)
 * Security: `THREAT_MODEL_STRIDE.md`
-* FinOps: `FINOPS_AND_SLO.md`
+* FinOps: `FINOPS_AND_SLO.md` (with hardware run-rate analysis)
 * Architecture: `ARCHITECTURE.md`
 
 Run the synthesized pipeline:
@@ -215,12 +251,13 @@ python export/<session_id>/main.py
 
 ---
 
-## 8. API Reference
+## 9. API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/status` | Returns local LLM connectivity status, active provider, and latency. |
-| `POST` | `/api/project` | Projects a raw seed fragment into a topological blueprint and Socratic probes. |
+| `GET` | `/api/status` | Returns local LLM connectivity, active model, host hardware summary, and model fit matrix. |
+| `GET` | `/api/hardware` | Returns detailed cross-platform hardware profile, multi-GPU topology, and spec tier. |
+| `POST` | `/api/project` | Projects a raw seed fragment into a topological blueprint with hardware invariants. |
 | `POST` | `/api/probe/resolve`| Resolves an architectural fork, updates the graph, and increases convergence. |
 | `POST` | `/api/synthesize` | Compiles the crystallized blueprint into multi-role IT deliverables. |
 | `POST` | `/api/export` | Safely writes all polyglot, devops, secops, QA, and finops files to disk. |
@@ -231,6 +268,6 @@ python export/<session_id>/main.py
 
 ---
 
-## 9. License
+## 10. License
 
 MIT License. Built for the future of human-AI cognitive collaboration.

@@ -59,4 +59,5 @@ class BlueprintState(BaseModel):
     invariants: List[Invariant] = []
     active_probes: List[ProbeFork] = []
     resolved_decisions: List[Dict[str, Any]] = []
+    hardware_profile: Optional[Dict[str, Any]] = None
     version: int = 1

@@ -61,6 +61,11 @@
         <span id="engine-name">Detecting Engine...</span>
       </div>
 
+      <div class="engine-badge hardware-badge" id="hardware-status-badge" title="Detected Local Hardware & GPU Acceleration (Click for Details)">
+        <span class="status-dot purple" id="hardware-dot"></span>
+        <span id="hardware-name">Hardware: Profiling...</span>
+      </div>
+
       <button id="btn-settings" class="btn-icon" title="Engine Settings">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"></circle>
@@ -368,6 +373,23 @@
         <label style="margin-top:12px;">Optional Cloud API Key:</label>
         <input type="password" id="setting-api-key" class="form-input" placeholder="Optional: sk-... (Leave empty for 100% Local LLM)">
         <small class="helper-text">Local models (Ollama/LM Studio) run entirely on your hardware and require NO API key.</small>
+
+        <!-- Hardware Spec & GPU Topologies -->
+        <div class="hardware-spec-section" style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="margin:0; font-weight:700;">Host Hardware & Multi-GPU Topology:</label>
+            <span id="hw-tier-badge" class="badge" style="background:rgba(139,92,246,0.2); color:var(--accent-purple); border:1px solid var(--accent-purple); font-size:0.7rem; padding:2px 6px; border-radius:4px;">PROFILING</span>
+          </div>
+          <div id="hw-details-box" style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:6px; padding:10px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-secondary); line-height:1.5;">
+            Detecting hardware accelerators...
+          </div>
+          <div style="margin-top:10px;">
+            <label style="margin-bottom:6px; display:block; font-size:0.8rem; font-weight:600;">Installed Model Fit Analysis (VRAM Offload):</label>
+            <div id="hw-model-fits" style="max-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:0.75rem; color:var(--text-muted);">Checking local model fit against VRAM capacity...</span>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button id="btn-test-connection" class="btn btn-secondary">Check Status</button>

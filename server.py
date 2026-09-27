@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
-from engine import BlueprintState, ModelClient, BlueprintSynthesizer, Node, Edge, Invariant
+from engine import BlueprintState, ModelClient, BlueprintSynthesizer, Node, Edge, Invariant, HardwareSpecProfiler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("gestalt.server")
@@ -122,8 +122,22 @@ async def get_index():
 
 @app.get("/api/status")
 async def get_model_status():
-    """Checks local model connectivity."""
-    return model_client.check_health()
+    """Checks local model connectivity and hardware capabilities."""
+    health = model_client.check_health()
+    profile = HardwareSpecProfiler.get_profile()
+    available_models = health.get("available_models", [])
+    model_fits = [profile.evaluate_model_fit(m) for m in available_models] if available_models else []
+    return {
+        **health,
+        "hardware": profile.to_summary_dict(),
+        "model_fits": model_fits
+    }
+
+@app.get("/api/hardware")
+async def get_hardware_profile():
+    """Returns detailed cross-platform hardware profile and GPU topologies."""
+    profile = HardwareSpecProfiler.get_profile()
+    return profile.model_dump()
 
 class SettingsRequest(BaseModel):
     provider: Optional[str] = "auto"

@@ -13,6 +13,7 @@ import requests
 from typing import Dict, Any, Optional, List
 from .topology import BlueprintState, Node, Edge, Invariant, ProbeFork, ProbeOption
 from .domain_knowledge import DomainKnowledge
+from .hardware import HardwareSpecProfiler
 
 logger = logging.getLogger("gestalt.model_client")
 
@@ -48,9 +49,7 @@ class ModelClient:
         """Check status of LLM providers. Local LLMs are prioritized with zero API keys required."""
         # 1. Test Local Ollama (Default port 11434)
         if self.provider in ["auto", "ollama"]:
-            candidates = [self.endpoint]
-            if "127.0.0.1" not in self.endpoint:
-                candidates.append("http://127.0.0.1:11434")
+            candidates = ["http://127.0.0.1:11434", self.endpoint] if "127.0.0.1" not in self.endpoint else [self.endpoint]
             for host in candidates:
                 try:
                     r = requests.get(f"{host}/api/tags", timeout=1.2)
@@ -121,18 +120,35 @@ class ModelClient:
         """
         Projects a raw seed fragment into a topological blueprint.
         Leverages local or configured LLMs when available; falls back to domain knowledge.
+        Calibrates the generated state against host hardware invariants.
         """
+        state = None
         health = self.check_health()
         if health["status"] == "connected" and self.provider != "heuristic":
             try:
                 res = self._call_llm_project(seed, health)
                 if res and len(res.nodes) >= 3:
-                    return res
+                    state = res
             except Exception as e:
                 logger.warning(f"Local LLM projection failed ({e}); falling back to Cognitive Knowledge Synthesizer.")
 
-        # Autonomous Cognitive Heuristic & Dynamic Concept Synthesizer
-        return self._heuristic_project(seed)
+        if state is None:
+            # Autonomous Cognitive Heuristic & Dynamic Concept Synthesizer
+            state = self._heuristic_project(seed)
+
+        # Calibrate with host hardware invariants
+        profile = HardwareSpecProfiler.get_profile()
+        state.hardware_profile = profile.to_summary_dict()
+
+        has_hw_inv = any(inv.category == "hardware-spec" for inv in state.invariants)
+        if not has_hw_inv:
+            state.invariants.append(Invariant(
+                statement=f"Hardware Profile ({profile.spec_tier_label}): Execution budget calibrated to {profile.recommended_context_window} tokens context window under {profile.recommended_quantization} precision on {profile.primary_compute_device}.",
+                category="hardware-spec",
+                severity="invariant"
+            ))
+
+        return state
 
     def resolve_probe_step(
         self,

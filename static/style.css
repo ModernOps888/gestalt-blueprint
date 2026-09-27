@@ -169,6 +169,28 @@ body {
   box-shadow: 0 0 8px var(--accent-emerald);
 }
 
+.status-dot.blue {
+  background-color: var(--accent-blue);
+  box-shadow: 0 0 8px var(--accent-blue);
+}
+
+.status-dot.purple {
+  background-color: var(--accent-purple);
+  box-shadow: 0 0 8px var(--accent-purple);
+}
+
+.hardware-badge {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.hardware-badge:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-purple);
+  color: var(--text-primary);
+}
+
 .btn-icon {
   background: none;
   border: 1px solid var(--border-subtle);

@@ -240,6 +240,15 @@ function setupEventListeners() {
     modal.classList.remove('hidden');
     checkEngineStatus();
   });
+
+  const hwStatusBadge = document.getElementById('hardware-status-badge');
+  if (hwStatusBadge) {
+    hwStatusBadge.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+      checkEngineStatus();
+    });
+  }
+
   document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.add('hidden'));
 
   const modelSelectEl = document.getElementById('setting-model-select');
@@ -435,7 +444,7 @@ window.deleteSession = async function(sessionId) {
   }
 };
 
-// --- ENGINE STATUS ---
+// --- ENGINE & HARDWARE STATUS ---
 async function checkEngineStatus() {
   try {
     const res = await fetch('/api/status');
@@ -464,6 +473,71 @@ async function checkEngineStatus() {
     const customModelInput = document.getElementById('setting-model');
     if (customModelInput && data.active_model && !customModelInput.value) {
       customModelInput.value = data.active_model;
+    }
+
+    // Update Hardware Status Pill & Settings Box
+    const hwNameEl = document.getElementById('hardware-name');
+    const hwDotEl = document.getElementById('hardware-dot');
+    const hwTierBadge = document.getElementById('hw-tier-badge');
+    const hwDetailsBox = document.getElementById('hw-details-box');
+    const hwModelFits = document.getElementById('hw-model-fits');
+
+    if (data.hardware) {
+      const hw = data.hardware;
+      if (hwNameEl) {
+        if (hw.gpu_count > 0) {
+          const firstGpu = hw.gpus[0] ? (hw.gpus[0].split(']')[1] || hw.gpus[0]) : 'GPU';
+          const cleanGpuName = firstGpu.split('(')[0].trim();
+          const prefix = hw.multi_gpu_enabled ? 'Multi-GPU' : 'GPU';
+          hwNameEl.innerText = `${prefix}: ${cleanGpuName} (${hw.total_vram_gb} GB)`;
+          if (hwDotEl) hwDotEl.className = 'status-dot green';
+        } else {
+          hwNameEl.innerText = `CPU-Only (${hw.ram.split('Total')[0].trim()})`;
+          if (hwDotEl) hwDotEl.className = 'status-dot purple';
+        }
+      }
+
+      if (hwTierBadge) {
+        hwTierBadge.innerText = (hw.spec_tier || 'PROFILED').toUpperCase();
+      }
+
+      if (hwDetailsBox) {
+        const gpuLines = (hw.gpus && hw.gpus.length > 0)
+          ? hw.gpus.map(g => `<div style="padding-left:8px;">• ${escapeHtml(g)}</div>`).join('')
+          : '<div style="padding-left:8px;">• No discrete GPU detected (CPU compute mode)</div>';
+
+        hwDetailsBox.innerHTML = `
+          <div><strong>Platform:</strong> ${escapeHtml(hw.os)}</div>
+          <div><strong>Processor:</strong> ${escapeHtml(hw.cpu)}</div>
+          <div><strong>System Memory:</strong> ${escapeHtml(hw.ram)}</div>
+          <div style="margin-top:4px;"><strong>Accelerators:</strong></div>
+          ${gpuLines}
+          <div style="margin-top:4px; color:var(--accent-cyan);"><strong>Recommended Scale:</strong> ${escapeHtml(hw.recommended_parameter_scale)}</div>
+        `;
+      }
+
+      if (hwModelFits && data.model_fits && data.model_fits.length > 0) {
+        hwModelFits.innerHTML = data.model_fits.map(fit => {
+          let badgeColor = 'var(--accent-emerald)';
+          let badgeBg = 'rgba(16, 185, 129, 0.15)';
+          if (fit.fit_status === 'hybrid') {
+            badgeColor = 'var(--accent-amber)';
+            badgeBg = 'rgba(245, 158, 11, 0.15)';
+          } else if (fit.fit_status === 'exceeds') {
+            badgeColor = 'var(--accent-rose)';
+            badgeBg = 'rgba(244, 63, 94, 0.15)';
+          }
+
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:5px 8px; border-radius:4px; font-family:var(--font-mono); font-size:0.72rem;">
+              <span style="color:#fff; font-weight:600;">${escapeHtml(fit.model)} <span style="color:var(--text-muted); font-size:0.68rem;">(${fit.param_scale})</span></span>
+              <span style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeColor}; padding:2px 6px; border-radius:3px; font-size:0.68rem;">${escapeHtml(fit.fit_label)}</span>
+            </div>
+          `;
+        }).join('');
+      } else if (hwModelFits) {
+        hwModelFits.innerHTML = '<span style="font-size:0.72rem; color:var(--text-muted);">No local models currently enumerated.</span>';
+      }
     }
   } catch (err) {
     engineNameEl.innerText = 'Cognitive Engine (Local Mode)';
